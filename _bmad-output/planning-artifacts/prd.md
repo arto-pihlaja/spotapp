@@ -1,7 +1,8 @@
 ---
-stepsCompleted: ['step-01-init', 'step-02-discovery', 'step-03-success', 'step-04-journeys']
+stepsCompleted: ['step-01-init', 'step-02-discovery', 'step-03-success', 'step-04-journeys', 'step-e-01-discovery', 'step-e-02-review', 'step-e-03-edit']
 inputDocuments: ['brainstorming-session-2026-02-07.md']
 workflowType: 'prd'
+workflow: 'edit'
 documentCounts:
   briefs: 0
   research: 0
@@ -13,12 +14,43 @@ classification:
   complexity: 'Low-Medium'
   projectContext: 'greenfield'
   backend: 'API-first (frontend-agnostic, supports future React Native migration)'
+lastEdited: '2026-02-20'
+editHistory:
+  - date: '2026-02-20'
+    changes: 'Added 3 critical BMAD core sections: Executive Summary, Functional Requirements (28 FRs across 6 areas), Non-Functional Requirements (31 NFRs across 7 quality attributes). Completed BMAD standard structure for MVP readiness.'
 ---
 
 # Product Requirements Document - SpotApp
 
 **Author:** Hemmu
 **Date:** 2026-02-08
+
+## Executive Summary
+
+**Product Vision:**
+SpotApp replaces chaotic WhatsApp coordination with structured, map-first session planning for water sports communities. Users see who's going, what conditions are like, and make go/no-go decisions in under 10 seconds.
+
+**Core Problem:**
+Water sports communities rely on WhatsApp for session coordination, requiring users to scroll through chat histories to find "who's going" and "what's it like." This creates friction for planning, excludes newcomers, and buries valuable local knowledge in ephemeral messages.
+
+**Solution:**
+A Progressive Web App (PWA) that provides real-time, location-based coordination through:
+- Map-first interface showing all spots at a glance
+- Structured condition reporting (swell, wind) with recency indicators
+- Session planning (Planned/Now states) visible to the community
+- Collaborative spot wiki pages capturing local knowledge
+- Ghost profiles (name + activity stats) with no social engagement mechanics
+
+**Target Users:**
+- **Primary:** Surf, wing foil, kite, SUP, and windsurf communities coordinating sessions locally (~200 people initial market)
+- **Secondary:** Newcomers to coastal areas seeking spots and community
+- **Tertiary:** Any coastal water sports community (national/international expansion potential)
+
+**Key Differentiator:**
+Zero social feed, zero engagement mechanics. Pure coordination utility. Users check SpotApp to make decisions, not to scroll feeds. Map-first design shows everything at once—no tapping through lists or feeds.
+
+**Business Context:**
+This is a greenfield project serving dual purposes: (1) solve real coordination problems for a local community, and (2) demonstrate modern software architecture and AI-assisted development workflows. Architecture prioritizes API-first design to support future React Native migration.
 
 ## Success Criteria
 
@@ -184,3 +216,260 @@ The MVP must be sufficient to convince 5-10 influencers to try it and find it va
 | Superadmin: block/unblock users | Superadmin | Must-have |
 | Superadmin: delete spots | Superadmin | Must-have |
 | Superadmin: remove/revert content | Superadmin | Must-have |
+
+## Functional Requirements
+
+### Map and Visualization
+
+**FR-MAP-01: Interactive Map Display**
+Users can view an interactive map centered on their current location showing all spots within visible bounds. Map renders and becomes interactive within 3 seconds on mobile devices.
+
+**FR-MAP-02: Zoom-Density Scaling**
+Map adjusts spot marker density based on zoom level to prevent visual clutter. Overlapping spots cluster at low zoom and separate at high zoom.
+
+**FR-MAP-03: Spot Cards on Map**
+Users can view at-a-glance spot cards directly on the map showing: latest condition data, recency indicator (color-coded), and session count for current time window. Data updates without requiring tap-through.
+
+**FR-MAP-04: Location-Based Centering**
+Map automatically centers on user's current location on first load. Users can pan and zoom freely.
+
+### Spot Management
+
+**FR-SPOT-01: Community Spot Creation**
+Authenticated users can create new spots by dropping a pin on the map and providing a name. Spot creation completes in under 3 taps.
+
+**FR-SPOT-02: Spot Wiki Pages**
+Each spot has a collaborative wiki page supporting markdown formatting. Users can read wiki content anonymously. Authenticated users can edit wiki content with changes visible immediately.
+
+**FR-SPOT-03: Wiki Content Structure**
+Spot wikis support: parking instructions, hazard warnings, best conditions, local etiquette, and free-form notes. No version control in MVP.
+
+**FR-SPOT-04: Spot Deletion (Superadmin)**
+Superadmin users can permanently delete spots including all associated data (sessions, conditions, wiki content). Deletion requires confirmation.
+
+### Session Planning
+
+**FR-SESSION-01: Two-State Session Model**
+Users can mark sessions in two states: **Planned** (future time, user-specified) and **Now** (current activity, auto-expires after 90 minutes).
+
+**FR-SESSION-02: Session Tuple**
+Each session captures: user, spot, timestamp, and sport type. All fields are required.
+
+**FR-SESSION-03: Sport Selection**
+Users select sport type from dropdown: surf, wing foil, kite, SUP, windsurf, other. One sport per session.
+
+**FR-SESSION-04: Planned Session Creation**
+Users can create planned sessions for future times. Session creation takes under 15 seconds including sport selection.
+
+**FR-SESSION-05: Now Session Auto-Expiry**
+"Now" sessions automatically expire 90 minutes after creation. Expired sessions no longer appear in active session counts or spot cards.
+
+**FR-SESSION-06: Session Visibility**
+Anonymous users see aggregated session counts ("5 planned sessions"). Authenticated users see individual usernames and sport types for all sessions.
+
+**FR-SESSION-07: Time-Slider for Planning**
+Users can slide a time selector to view planned sessions at future times. Default range: now to sunset. Spot cards update to show session counts for selected time.
+
+### Condition Reporting
+
+**FR-COND-01: Structured Condition Input**
+Users can report conditions using: swell height slider (0-3m in 0.1m increments), wind speed slider (0-20 m/s in 1 m/s increments), and wind direction selector (8 cardinal directions).
+
+**FR-COND-02: Condition Report Creation Time**
+Users can submit a condition report in under 15 seconds from opening the spot to confirmation.
+
+**FR-COND-03: One-Tap Confirm**
+Users can confirm existing condition reports with a single tap. Each report tracks confirmation count. One-tap confirm completes in under 3 seconds.
+
+**FR-COND-04: Condition Report Visibility**
+Latest condition report appears on spot card with recency indicator. Anonymous users see aggregated condition data. Authenticated users see reporting username and confirmation count.
+
+**FR-COND-05: Recency Indicators**
+Condition data displays color-coded recency: green (< 30 min), yellow (30-60 min), orange (60-120 min), grey (> 120 min or no data).
+
+**FR-COND-06: Condition Report Propagation**
+Condition reports appear to other users within 30 seconds of submission across all active clients.
+
+### User Management
+
+**FR-USER-01: Anonymous Browse Mode**
+Unauthenticated users can view: map, spot locations, spot wikis, aggregated condition data (no usernames), and aggregated session counts (no usernames). No registration required.
+
+**FR-USER-02: Registration with Invitation Code**
+Users register with: username (unique), password, and valid invitation code. No email required. Registration completes in under 30 seconds.
+
+**FR-USER-03: Anti-Bot Measures**
+Registration form implements: honeypot field, JavaScript challenge, time-based submission check, and rate limiting. All measures run silently without user friction.
+
+**FR-USER-04: Invitation Code System**
+Superadmin can generate invitation codes with optional expiration and usage limits. Codes are single-use or multi-use (admin configurable).
+
+**FR-USER-05: Ghost Profiles**
+User profiles display: username, optional profile photo, optional external link, and auto-generated activity stats (session count, spots visited). No social feed or engagement features.
+
+**FR-USER-06: User Blocking (Superadmin)**
+Superadmin can block user accounts. Blocked users cannot log in. Existing sessions and condition reports from blocked users are removed.
+
+**FR-USER-07: User Unblocking (Superadmin)**
+Superadmin can unblock previously blocked users. Unblocked users regain full access immediately.
+
+### Content Moderation
+
+**FR-MOD-01: Wiki Content Removal**
+Superadmin can remove or revert wiki content edits. Changes apply immediately.
+
+**FR-MOD-02: Moderation Audit Trail**
+System tracks all superadmin moderation actions: user blocks/unblocks, spot deletions, content removals. Audit log includes timestamp and admin username.
+
+### Traceability Matrix
+
+| Functional Requirement | User Journey | Success Criteria |
+|------------------------|--------------|------------------|
+| FR-MAP-01, FR-MAP-03, FR-MAP-04 | Mika (J1), Sofia (J2) | One-glance decision < 10s |
+| FR-SESSION-01, FR-SESSION-04, FR-SESSION-05 | Mika (J1), Sofia (J2) | Zero-friction contribution < 15s |
+| FR-COND-01, FR-COND-02, FR-COND-03, FR-COND-05 | Mika (J1) | Condition report < 15s, confirm < 3s |
+| FR-SPOT-01, FR-SPOT-02 | Sofia (J2) | Newcomer self-service |
+| FR-USER-01, FR-USER-02, FR-USER-03 | Anonymous-to-Registered (J3) | Natural conversion flow |
+| FR-USER-06, FR-SPOT-04, FR-MOD-01 | Superadmin (J4) | Content moderation < 2 min |
+| FR-SESSION-06, FR-COND-04 | Mika (J1), Sofia (J2) | "Aha" moment (seeing who's going) |
+| FR-SESSION-07 | Mika (J1), Sofia (J2) | Forward planning capability |
+
+## Non-Functional Requirements
+
+### Performance
+
+**NFR-PERF-01: Map Load Time**
+The map shall load and become interactive within 3 seconds on mobile devices over 4G connection as measured by Lighthouse performance metrics. 95th percentile load time shall not exceed 4 seconds.
+
+**NFR-PERF-02: Initial Page Load**
+The PWA initial page load shall complete within 2 seconds for returning users with service worker cache as measured by browser performance API.
+
+**NFR-PERF-03: Condition Report Propagation**
+Condition reports and session updates shall propagate to all active clients within 30 seconds of submission as measured by server-side timestamp logs.
+
+**NFR-PERF-04: API Response Time**
+API endpoints shall respond within 200ms for 95th percentile of requests under normal load (up to 100 concurrent users) as measured by application performance monitoring.
+
+**NFR-PERF-05: Database Query Performance**
+Database queries for map viewport data (spots, conditions, sessions) shall complete within 100ms for areas containing up to 500 spots as measured by database query logs.
+
+### Scalability
+
+**NFR-SCALE-01: Concurrent Users**
+The system shall support 100 concurrent active users without performance degradation as measured by load testing tools.
+
+**NFR-SCALE-02: Data Growth**
+The system shall handle up to 1,000 spots, 10,000 sessions, and 50,000 condition reports without query performance degradation below NFR-PERF-05 targets.
+
+**NFR-SCALE-03: Real-Time Connections**
+The system shall maintain stable real-time connections for up to 100 simultaneous clients without connection drops as measured by WebSocket monitoring.
+
+**NFR-SCALE-04: Geographic Expansion**
+The architecture shall support deployment across multiple geographic regions without code changes, supporting region-specific instances via configuration.
+
+### Availability and Reliability
+
+**NFR-AVAIL-01: Uptime**
+The system shall maintain 99% uptime during peak hours (6 AM - 8 PM local time) as measured by uptime monitoring services over 30-day rolling windows.
+
+**NFR-AVAIL-02: Data Persistence**
+All user-generated content (spots, sessions, conditions, wiki edits) shall persist reliably with zero data loss under normal operating conditions as verified by database backup and recovery testing.
+
+**NFR-AVAIL-03: Graceful Degradation**
+The PWA shall display cached map data and spots when offline. Users shall see "offline mode" indicator and read-only access to previously loaded content.
+
+**NFR-AVAIL-04: Session Auto-Expiry**
+The system shall automatically expire "Now" sessions exactly 90 minutes after creation within 5-minute accuracy as measured by server-side cleanup job logs.
+
+### Security
+
+**NFR-SEC-01: Authentication**
+User authentication shall use industry-standard password hashing (bcrypt with work factor >= 12) as verified by security audit.
+
+**NFR-SEC-02: Session Management**
+User sessions shall expire after 30 days of inactivity. Session tokens shall be cryptographically secure random values with minimum 128-bit entropy.
+
+**NFR-SEC-03: Invitation Code Validation**
+The system shall validate invitation codes server-side before account creation. Invalid codes shall be rejected with no account creation.
+
+**NFR-SEC-04: Rate Limiting**
+API endpoints shall enforce rate limiting: 10 requests per minute per IP for registration, 100 requests per minute per authenticated user for general API access, as measured by rate limiting middleware logs.
+
+**NFR-SEC-05: Anti-Bot Protection**
+Registration shall implement multi-layered bot protection: honeypot field detection (reject if filled), JavaScript challenge validation, minimum form submission time of 5 seconds. Bot detection shall block registration with HTTP 403 response.
+
+**NFR-SEC-06: Data Privacy**
+User profiles shall store only username, password hash, optional photo URL, and optional link. No email, phone, or personal identifiable information required. Users can delete their accounts with all associated data removed.
+
+**NFR-SEC-07: Superadmin Access Control**
+Superadmin privileges shall be limited to designated accounts only. All superadmin actions shall require authenticated session with admin role verification.
+
+### Usability
+
+**NFR-USE-01: Mobile-First Design**
+The interface shall be optimized for mobile devices with touch targets minimum 44x44 pixels and responsive layouts supporting viewport widths from 320px to 2560px as verified by responsive design testing.
+
+**NFR-USE-02: Decision Time**
+Users shall complete go/no-go decisions for sessions within 10 seconds from app load as measured by user journey testing (FR-MAP-03, FR-COND-05).
+
+**NFR-USE-03: Contribution Friction**
+Condition reporting shall complete in under 15 seconds, one-tap confirm in under 3 seconds, as measured by user journey testing (NFR-PERF-02, NFR-PERF-03).
+
+**NFR-USE-04: Progressive Web App**
+The application shall function as a PWA with: installable to home screen, app-like fullscreen experience, service worker caching for offline map viewing, as verified by Lighthouse PWA audit score >= 90.
+
+**NFR-USE-05: Browser Compatibility**
+The PWA shall function correctly on: Chrome/Edge (latest 2 versions), Safari iOS (latest 2 versions), Firefox (latest 2 versions) as verified by cross-browser testing.
+
+### Maintainability
+
+**NFR-MAINT-01: API-First Architecture**
+The backend shall expose a RESTful API independent of frontend implementation. API shall be versioned (v1) and documented with OpenAPI specification to support future React Native client without backend changes.
+
+**NFR-MAINT-02: Code Modularity**
+The system shall maintain clear separation of concerns: API layer, business logic layer, data access layer, frontend presentation layer. Each layer shall have defined interfaces.
+
+**NFR-MAINT-03: Frontend-Backend Independence**
+The PWA frontend and API backend shall be deployable independently. API changes shall maintain backward compatibility for one major version.
+
+**NFR-MAINT-04: Development Workflow**
+The project shall demonstrate AI-assisted development workflows with clear architecture documentation enabling agentic coding tools to contribute effectively.
+
+### Data Retention
+
+**NFR-DATA-01: Session History**
+"Planned" sessions shall be retained for 30 days after scheduled time. "Now" sessions shall be retained for 7 days after expiration. Historical session data shall be available for activity stats.
+
+**NFR-DATA-02: Condition Report History**
+Condition reports shall be retained indefinitely for historical analysis and spot pattern detection (future feature support).
+
+**NFR-DATA-03: Wiki Edit History**
+MVP shall store only current wiki content. Edit history and version control are deferred to Growth phase (no version control required for MVP).
+
+**NFR-DATA-04: User Account Deletion**
+When users delete accounts, all personal data (username, password hash, profile info) shall be removed. Associated content (sessions, condition reports) may be anonymized or removed per user preference.
+
+### Testing and Quality
+
+**NFR-TEST-01: Automated Testing**
+Critical user journeys (Mika's dawn patrol, Sofia's newcomer flow, anonymous-to-registered) shall have automated end-to-end tests with 100% pass rate before production deployment.
+
+**NFR-TEST-02: Load Testing**
+The system shall undergo load testing simulating 100 concurrent users performing typical actions (map loads, session creation, condition reporting) before MVP launch.
+
+**NFR-TEST-03: Mobile Device Testing**
+The PWA shall be tested on physical devices: iPhone (iOS Safari), Android (Chrome), mid-range hardware to verify performance targets.
+
+### Traceability to Success Criteria
+
+| Non-Functional Requirement | Success Criteria Alignment |
+|---------------------------|---------------------------|
+| NFR-PERF-01, NFR-PERF-02 | Map loads and becomes interactive in under 3 seconds |
+| NFR-PERF-03 | Condition reports appear to other users within 30 seconds |
+| NFR-USE-02 | One-glance decision < 10 seconds |
+| NFR-USE-03 | Zero-friction contribution < 15 seconds, confirm < 3 seconds |
+| NFR-SCALE-01, NFR-SCALE-02 | 50+ active users within 3 months (scalability foundation) |
+| NFR-MAINT-01, NFR-MAINT-03 | Frontend-agnostic backend (React Native migration ready) |
+| NFR-MAINT-04 | Agentic coding exercise (architecture showcase) |
+| NFR-USE-04, NFR-USE-05 | PWA mobile-first (business success: organic growth via mobile) |
+| NFR-SEC-01 through NFR-SEC-07 | Invitation code system, anti-bot measures (community quality) |
