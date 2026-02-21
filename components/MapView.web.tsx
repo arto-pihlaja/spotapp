@@ -1,16 +1,29 @@
-import { useEffect, useRef, useCallback } from 'react';
-import { StyleSheet, View } from 'react-native';
-import maplibregl from 'maplibre-gl';
+import { useEffect, useRef, useCallback, useState } from 'react';
 import type { MapViewProps, Region } from '@/types/map';
 
-// Inject MapLibre CSS once
-const CSS_ID = 'maplibre-gl-css';
-if (typeof document !== 'undefined' && !document.getElementById(CSS_ID)) {
-  const link = document.createElement('link');
-  link.id = CSS_ID;
-  link.rel = 'stylesheet';
-  link.href = 'https://unpkg.com/maplibre-gl@latest/dist/maplibre-gl.css';
-  document.head.appendChild(link);
+// Dynamically load MapLibre GL from CDN (avoids Metro import.meta issue)
+function loadMapLibre(): Promise<any> {
+  if ((window as any).maplibregl) {
+    return Promise.resolve((window as any).maplibregl);
+  }
+
+  return new Promise((resolve, reject) => {
+    // CSS
+    if (!document.getElementById('maplibre-css')) {
+      const link = document.createElement('link');
+      link.id = 'maplibre-css';
+      link.rel = 'stylesheet';
+      link.href = 'https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css';
+      document.head.appendChild(link);
+    }
+
+    // JS
+    const script = document.createElement('script');
+    script.src = 'https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js';
+    script.onload = () => resolve((window as any).maplibregl);
+    script.onerror = () => reject(new Error('Failed to load MapLibre GL'));
+    document.head.appendChild(script);
+  });
 }
 
 function regionToCenter(region: Region): [number, number] {
@@ -18,15 +31,14 @@ function regionToCenter(region: Region): [number, number] {
 }
 
 function regionToZoom(region: Region): number {
-  // Approximate zoom from latitudeDelta
   return Math.round(Math.log2(360 / region.latitudeDelta));
 }
 
 export default function MapView({ region, markers, onRegionChange, onMarkerPress }: MapViewProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const mapRef = useRef<maplibregl.Map | null>(null);
-  const markersRef = useRef<maplibregl.Marker[]>([]);
-  const isUserInteracting = useRef(false);
+  const mapRef = useRef<any>(null);
+  const markersRef = useRef<any[]>([]);
+  const [ready, setReady] = useState(false);
 
   const handleMoveEnd = useCallback(() => {
     const map = mapRef.current;
@@ -34,44 +46,47 @@ export default function MapView({ region, markers, onRegionChange, onMarkerPress
 
     const center = map.getCenter();
     const bounds = map.getBounds();
-    const latDelta = bounds.getNorth() - bounds.getSouth();
-    const lngDelta = bounds.getEast() - bounds.getWest();
 
     onRegionChange({
       latitude: center.lat,
       longitude: center.lng,
-      latitudeDelta: latDelta,
-      longitudeDelta: lngDelta,
+      latitudeDelta: bounds.getNorth() - bounds.getSouth(),
+      longitudeDelta: bounds.getEast() - bounds.getWest(),
     });
   }, [onRegionChange]);
 
-  // Initialize map
+  // Load library and initialize map
   useEffect(() => {
-    if (!containerRef.current || mapRef.current) return;
+    let cancelled = false;
 
-    const map = new maplibregl.Map({
-      container: containerRef.current,
-      style: 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json',
-      center: regionToCenter(region),
-      zoom: regionToZoom(region),
-      attributionControl: false,
+    loadMapLibre().then((maplibregl) => {
+      if (cancelled || !containerRef.current || mapRef.current) return;
+
+      const map = new maplibregl.Map({
+        container: containerRef.current,
+        style: 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json',
+        center: regionToCenter(region),
+        zoom: regionToZoom(region),
+        attributionControl: false,
+      });
+
+      map.addControl(new maplibregl.AttributionControl({ compact: true }), 'bottom-left');
+      map.on('moveend', handleMoveEnd);
+      mapRef.current = map;
+      setReady(true);
     });
 
-    map.addControl(new maplibregl.AttributionControl({ compact: true }), 'bottom-left');
-
-    map.on('moveend', handleMoveEnd);
-
-    mapRef.current = map;
-
     return () => {
-      map.remove();
-      mapRef.current = null;
+      cancelled = true;
+      if (mapRef.current) {
+        mapRef.current.remove();
+        mapRef.current = null;
+      }
     };
-    // Only run on mount
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Update moveend handler when callback changes
+  // Update moveend handler
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
@@ -82,10 +97,11 @@ export default function MapView({ region, markers, onRegionChange, onMarkerPress
   // Sync markers
   useEffect(() => {
     const map = mapRef.current;
-    if (!map) return;
+    if (!map || !ready) return;
 
-    // Remove old markers
-    markersRef.current.forEach((m) => m.remove());
+    const maplibregl = (window as any).maplibregl;
+
+    markersRef.current.forEach((m: any) => m.remove());
     markersRef.current = [];
 
     if (!markers) return;
@@ -109,17 +125,18 @@ export default function MapView({ region, markers, onRegionChange, onMarkerPress
 
       markersRef.current.push(marker);
     });
-  }, [markers, onMarkerPress]);
+  }, [markers, onMarkerPress, ready]);
 
   return (
-    <View style={styles.container}>
-      <div ref={containerRef} style={{ width: '100%', height: '100%' }} />
-    </View>
+    <div
+      ref={containerRef}
+      style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        width: '100vw',
+        height: '100vh',
+      }}
+    />
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-});

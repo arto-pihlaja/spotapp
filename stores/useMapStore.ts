@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { persist, createJSONStorage } from 'zustand/middleware';
+import { persist } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { DEFAULT_REGION } from '@/types/map';
 import type { Region } from '@/types/map';
@@ -25,8 +25,8 @@ export const useMapStore = create<MapState>()(
     }),
     {
       name: 'spotapp-map',
-      storage: createJSONStorage(() => AsyncStorage),
-      partialize: (state) => ({ region: state.region }),
+      getStorage: () => AsyncStorage,
+      partialize: (state) => ({ region: state.region } as MapState),
     },
   ),
 );
