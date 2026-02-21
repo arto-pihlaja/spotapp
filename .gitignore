@@ -1,44 +1,30 @@
+# Dependencies
+node_modules/
 
-# Ignore Claude / BMAD tooling
-.claude/
-_bmad/
+# Expo
+.expo/
+web-build/
+dist/
+
+# TypeScript
+*.tsbuildinfo
+
+# Testing
+coverage/
+
+# Server build output
+server/dist/
 
 # Environment files
 .env
-.env.*
 .env.local
-.venv/
+.env.*.local
+!.env.example
+!server/.env.example
 
-# Byte-compiled / cache
-__pycache__/
-*.py[cod]
-*$py.class
-
-# Distribution / packaging
-build/
-dist/
-*.egg-info/
-pip-wheel-metadata/
-
-# Virtual environments
-venv/
-env/
-ENV/
-venv.bak/
-
-# Jupyter Notebooks
-.ipynb_checkpoints/
-
-# Test / coverage
-.pytest_cache/
-.cache
-.coverage
-coverage.xml
-htmlcov/
-
-# Type checkers / linters
-.mypy_cache/
-.ruff_cache/
+# Logs
+*.log
+npm-debug.log*
 
 # Editor / IDE
 .vscode/
@@ -46,24 +32,13 @@ htmlcov/
 *.sublime-project
 *.sublime-workspace
 
-# Logs and runtime files
-*.log
-*.sqlite3
-instance/
-celerybeat-schedule
-
-# Uvicorn / ASGI specific
-uvicorn.log
-gunicorn.log
-
-# Docker
-.envrc
-docker-compose.override.yml
-docker-compose.*.yml
-
 # OS files
 .DS_Store
 Thumbs.db
 
-# Node (if frontend assets present)
-node_modules/
+# Claude / BMAD tooling
+.claude/
+_bmad/
+
+# Docker overrides
+docker-compose.override.yml
