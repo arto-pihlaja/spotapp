@@ -1,6 +1,10 @@
+import { useState, useEffect } from 'react';
 import { StyleSheet, View, Text, ActivityIndicator, Pressable } from 'react-native';
 import { BottomSheet } from '@/components/BottomSheet';
 import { useSpot } from '../hooks/useSpot';
+import { WikiView } from '@/features/wiki/components/WikiView';
+import { WikiEditor } from '@/features/wiki/components/WikiEditor';
+import { useWiki } from '@/features/wiki/hooks/useWiki';
 
 interface SpotDetailSheetProps {
   spotId: string | null;
@@ -20,6 +24,13 @@ function formatRelativeDate(dateStr: string): string {
 
 export function SpotDetailSheet({ spotId, onDismiss }: SpotDetailSheetProps) {
   const { data: spot, isLoading, error, refetch } = useSpot(spotId);
+  const { data: wiki } = useWiki(spotId);
+  const [editing, setEditing] = useState(false);
+
+  // Reset editing state when spot changes
+  useEffect(() => {
+    setEditing(false);
+  }, [spotId]);
 
   return (
     <BottomSheet visible={!!spotId} onDismiss={onDismiss}>
@@ -46,16 +57,18 @@ export function SpotDetailSheet({ spotId, onDismiss }: SpotDetailSheetProps) {
             {spot.latitude.toFixed(5)}, {spot.longitude.toFixed(5)}
           </Text>
 
-          {/* Wiki preview */}
+          {/* Wiki */}
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>About</Text>
-            <Text style={styles.sectionContent}>
-              {spot.wikiContent?.content
-                ? spot.wikiContent.content.length > 150
-                  ? spot.wikiContent.content.slice(0, 150) + '...'
-                  : spot.wikiContent.content
-                : 'No description yet'}
-            </Text>
+            {editing && spotId ? (
+              <WikiEditor
+                spotId={spotId}
+                initialContent={wiki?.content ?? ''}
+                onDone={() => setEditing(false)}
+              />
+            ) : (
+              <WikiView spotId={spotId} onEdit={() => setEditing(true)} />
+            )}
           </View>
 
           {/* Conditions placeholder */}

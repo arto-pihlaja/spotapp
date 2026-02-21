@@ -9,6 +9,7 @@ import healthRoutes from './routes/health.routes.js';
 import spotsRoutes from './routes/spots.routes.js';
 import authRoutes from './routes/auth.routes.js';
 import adminRoutes from './routes/admin.routes.js';
+import wikiRoutes from './routes/wiki.routes.js';
 
 const app = express();
 
@@ -22,6 +23,7 @@ app.use('/api/v1', healthRoutes);
 app.use('/api/v1', spotsRoutes);
 app.use('/api/v1', authRoutes);
 app.use('/api/v1', adminRoutes);
+app.use('/api/v1', wikiRoutes);
 
 // Error handler
 app.use(errorHandler);
