@@ -17,6 +17,7 @@ export interface MapViewProps {
   markers?: MapMarker[];
   onRegionChange?: (region: Region) => void;
   onMarkerPress?: (markerId: string) => void;
+  onLongPress?: (coordinate: { latitude: number; longitude: number }) => void;
 }
 
 // Default region: Tarifa, Spain (matches seed data)

@@ -3,13 +3,17 @@ import { StyleSheet, View, Pressable, Text, Platform } from 'react-native';
 import * as Location from 'expo-location';
 import MapView from '@/components/MapView';
 import { useMapStore } from '@/stores/useMapStore';
+import { useAuthStore } from '@/stores/useAuthStore';
 import { useSpots } from '@/features/spots/hooks/useSpots';
 import { useDebounce } from '@/lib/useDebounce';
+import { CreateSpotModal } from '@/features/spots/components/CreateSpotModal';
+import { SpotDetailSheet } from '@/features/spots/components/SpotDetailSheet';
 import type { Region, MapMarker } from '@/types/map';
 
 export default function MapScreen() {
-  const { region, setRegion, selectSpot } = useMapStore();
+  const { region, setRegion, selectSpot, selectedSpotId } = useMapStore();
   const [locationDenied, setLocationDenied] = useState(false);
+  const [createCoord, setCreateCoord] = useState<{ latitude: number; longitude: number } | null>(null);
 
   // Debounce region to avoid excessive API calls during pan/zoom
   const debouncedRegion = useDebounce(region, 300);
@@ -62,6 +66,15 @@ export default function MapScreen() {
     [selectSpot],
   );
 
+  const handleLongPress = useCallback(
+    (coordinate: { latitude: number; longitude: number }) => {
+      const token = useAuthStore.getState().accessToken;
+      if (!token) return; // anonymous users can't create spots
+      setCreateCoord(coordinate);
+    },
+    [],
+  );
+
   return (
     <View style={styles.container}>
       <MapView
@@ -69,6 +82,7 @@ export default function MapScreen() {
         markers={markers}
         onRegionChange={handleRegionChange}
         onMarkerPress={handleMarkerPress}
+        onLongPress={handleLongPress}
       />
 
       {/* Find Me FAB */}
@@ -80,6 +94,17 @@ export default function MapScreen() {
       >
         <Text style={styles.fabIcon}>📍</Text>
       </Pressable>
+
+      <CreateSpotModal
+        visible={createCoord !== null}
+        coordinate={createCoord}
+        onClose={() => setCreateCoord(null)}
+      />
+
+      <SpotDetailSheet
+        spotId={selectedSpotId}
+        onDismiss={() => selectSpot(null)}
+      />
     </View>
   );
 }

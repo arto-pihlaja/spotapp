@@ -1,4 +1,5 @@
 import { Platform } from 'react-native';
+import { useAuthStore } from '@/stores/useAuthStore';
 
 const BASE_URL = Platform.select({
   web: 'http://localhost:3000/api/v1',
@@ -24,11 +25,13 @@ class ApiError extends Error {
 
 async function request<T>(path: string, options?: RequestInit): Promise<ApiResponse<T>> {
   const url = `${BASE_URL}${path}`;
+  const token = useAuthStore.getState().accessToken;
 
   const res = await fetch(url, {
     ...options,
     headers: {
       'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...options?.headers,
     },
   });

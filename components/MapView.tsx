@@ -3,7 +3,7 @@ import { StyleSheet } from 'react-native';
 import NativeMapView, { Marker, type Region as NativeRegion } from 'react-native-maps';
 import type { MapViewProps } from '@/types/map';
 
-export default function MapView({ region, markers, onRegionChange, onMarkerPress }: MapViewProps) {
+export default function MapView({ region, markers, onRegionChange, onMarkerPress, onLongPress }: MapViewProps) {
   const handleRegionChangeComplete = useCallback(
     (nativeRegion: NativeRegion) => {
       onRegionChange?.({
@@ -26,6 +26,7 @@ export default function MapView({ region, markers, onRegionChange, onMarkerPress
         longitudeDelta: region.longitudeDelta,
       }}
       onRegionChangeComplete={handleRegionChangeComplete}
+      onLongPress={(e) => onLongPress?.(e.nativeEvent.coordinate)}
       showsUserLocation
       showsMyLocationButton={false}
     >

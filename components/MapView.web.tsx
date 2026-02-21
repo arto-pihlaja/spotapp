@@ -34,11 +34,13 @@ function regionToZoom(region: Region): number {
   return Math.round(Math.log2(360 / region.latitudeDelta));
 }
 
-export default function MapView({ region, markers, onRegionChange, onMarkerPress }: MapViewProps) {
+export default function MapView({ region, markers, onRegionChange, onMarkerPress, onLongPress }: MapViewProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<any>(null);
   const markersRef = useRef<any[]>([]);
   const [ready, setReady] = useState(false);
+  const onLongPressRef = useRef(onLongPress);
+  onLongPressRef.current = onLongPress;
 
   const handleMoveEnd = useCallback(() => {
     const map = mapRef.current;
@@ -72,6 +74,42 @@ export default function MapView({ region, markers, onRegionChange, onMarkerPress
 
       map.addControl(new maplibregl.AttributionControl({ compact: true }), 'bottom-left');
       map.on('moveend', handleMoveEnd);
+
+      // Long-press detection (500ms hold, <5px movement)
+      let lpTimer: ReturnType<typeof setTimeout> | null = null;
+      let startX = 0;
+      let startY = 0;
+
+      const canvas = map.getCanvas();
+
+      canvas.addEventListener('mousedown', (e: MouseEvent) => {
+        startX = e.offsetX;
+        startY = e.offsetY;
+        lpTimer = setTimeout(() => {
+          const cb = onLongPressRef.current;
+          if (!cb) return;
+          const lngLat = map.unproject([startX, startY]);
+          cb({ latitude: lngLat.lat, longitude: lngLat.lng });
+        }, 500);
+      });
+
+      canvas.addEventListener('mousemove', (e: MouseEvent) => {
+        if (!lpTimer) return;
+        const dx = e.offsetX - startX;
+        const dy = e.offsetY - startY;
+        if (dx * dx + dy * dy > 25) {
+          clearTimeout(lpTimer);
+          lpTimer = null;
+        }
+      });
+
+      canvas.addEventListener('mouseup', () => {
+        if (lpTimer) {
+          clearTimeout(lpTimer);
+          lpTimer = null;
+        }
+      });
+
       mapRef.current = map;
       setReady(true);
     });
