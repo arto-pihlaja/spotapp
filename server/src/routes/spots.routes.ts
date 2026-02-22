@@ -15,7 +15,10 @@ router.get('/spots', async (req: Request, res: Response) => {
     throw new AppError(400, 'VALIDATION_ERROR', z.prettifyError(result.error));
   }
 
-  const spots = await getSpotsByViewport(result.data.viewport);
+  const spots = await getSpotsByViewport(result.data.viewport, {
+    timeFrom: result.data.timeFrom,
+    timeTo: result.data.timeTo,
+  });
 
   res.json({
     data: spots,

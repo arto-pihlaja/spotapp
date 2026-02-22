@@ -10,6 +10,7 @@ export interface MapMarker {
   latitude: number;
   longitude: number;
   title: string;
+  sessionCount?: number;
 }
 
 export interface MapViewProps {

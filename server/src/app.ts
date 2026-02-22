@@ -11,6 +11,7 @@ import authRoutes from './routes/auth.routes.js';
 import adminRoutes from './routes/admin.routes.js';
 import wikiRoutes from './routes/wiki.routes.js';
 import conditionsRoutes from './routes/conditions.routes.js';
+import sessionsRoutes from './routes/sessions.routes.js';
 
 const app = express();
 
@@ -26,6 +27,7 @@ app.use('/api/v1', authRoutes);
 app.use('/api/v1', adminRoutes);
 app.use('/api/v1', wikiRoutes);
 app.use('/api/v1', conditionsRoutes);
+app.use('/api/v1', sessionsRoutes);
 
 // Error handler
 app.use(errorHandler);

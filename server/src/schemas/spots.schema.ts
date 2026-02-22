@@ -22,6 +22,8 @@ export const viewportQuerySchema = z.object({
         neLng: z.number().min(-180).max(180),
       }),
     ),
+  timeFrom: z.string().datetime().optional(),
+  timeTo: z.string().datetime().optional(),
 });
 
 export type ViewportQuery = z.infer<typeof viewportQuerySchema>;

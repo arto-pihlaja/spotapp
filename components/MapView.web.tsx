@@ -147,7 +147,16 @@ export default function MapView({ region, markers, onRegionChange, onMarkerPress
     markers.forEach((spot) => {
       const el = document.createElement('div');
       el.style.cssText =
-        'width:32px;height:32px;background:#0284C7;border:2px solid #fff;border-radius:50%;cursor:pointer;box-shadow:0 2px 4px rgba(0,0,0,0.3);';
+        'position:relative;width:32px;height:32px;background:#0284C7;border:2px solid #fff;border-radius:50%;cursor:pointer;box-shadow:0 2px 4px rgba(0,0,0,0.3);';
+
+      // Session count badge
+      if (spot.sessionCount && spot.sessionCount > 0) {
+        const badge = document.createElement('div');
+        badge.textContent = String(spot.sessionCount);
+        badge.style.cssText =
+          'position:absolute;top:-6px;right:-6px;min-width:18px;height:18px;background:#10B981;color:#fff;font-size:11px;font-weight:700;border-radius:9px;display:flex;align-items:center;justify-content:center;padding:0 4px;border:1.5px solid #fff;';
+        el.appendChild(badge);
+      }
 
       if (onMarkerPress) {
         el.addEventListener('click', (e) => {

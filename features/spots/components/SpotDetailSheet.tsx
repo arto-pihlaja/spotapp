@@ -10,9 +10,13 @@ import { useSocketEvent } from '@/lib/useSocketEvent';
 import { queryClient } from '@/lib/queryClient';
 import { useConditions } from '@/features/conditions/hooks/useConditions';
 import { QuickReportSlider } from '@/features/conditions/components/QuickReportSlider';
+import { ConditionBadge } from '@/features/conditions/components/ConditionBadge';
 import { useConfirmCondition } from '@/features/conditions/hooks/useConfirmCondition';
-import { getCardinalLabel } from '@/features/conditions/types';
 import { useAuthStore } from '@/stores/useAuthStore';
+import { useSessions } from '@/features/sessions/hooks/useSessions';
+import { useLeaveSession } from '@/features/sessions/hooks/useLeaveSession';
+import { SessionForm } from '@/features/sessions/components/SessionForm';
+import { SessionCard } from '@/features/sessions/components/SessionCard';
 
 interface SpotDetailSheetProps {
   spotId: string | null;
@@ -35,14 +39,21 @@ export function SpotDetailSheet({ spotId, onDismiss }: SpotDetailSheetProps) {
   const { data: wiki } = useWiki(spotId);
   const { data: conditions } = useConditions(spotId);
   const confirmMutation = useConfirmCondition(spotId ?? '');
+  const { data: sessionsData } = useSessions(spotId);
+  const sessions = sessionsData?.sessions;
+  const sessionCount = sessionsData?.sessionCount ?? 0;
+  const hasOwnSession = sessions?.some((s) => s.isOwn);
+  const leaveMutation = useLeaveSession(spotId ?? '');
   const [editing, setEditing] = useState(false);
   const [reporting, setReporting] = useState(false);
+  const [creatingSession, setCreatingSession] = useState(false);
   const isAuthenticated = useAuthStore((s) => !!s.accessToken);
 
   // Reset state when spot changes
   useEffect(() => {
     setEditing(false);
     setReporting(false);
+    setCreatingSession(false);
   }, [spotId]);
 
   // Join/leave spot room for real-time updates
@@ -59,8 +70,15 @@ export function SpotDetailSheet({ spotId, onDismiss }: SpotDetailSheetProps) {
     queryClient.invalidateQueries({ queryKey: ['spot', spotId, 'conditions'] });
   }, [spotId]);
 
+  const handleSessionUpdate = useCallback(() => {
+    queryClient.invalidateQueries({ queryKey: ['spot', spotId, 'sessions'] });
+  }, [spotId]);
+
   useSocketEvent('condition:new', handleConditionNew, !!spotId);
   useSocketEvent('condition:confirmed', handleConditionConfirmed, !!spotId);
+  useSocketEvent('session:joined', handleSessionUpdate, !!spotId);
+  useSocketEvent('session:left', handleSessionUpdate, !!spotId);
+  useSocketEvent('session:expired', handleSessionUpdate, !!spotId);
 
   return (
     <BottomSheet visible={!!spotId} onDismiss={onDismiss}>
@@ -113,44 +131,13 @@ export function SpotDetailSheet({ spotId, onDismiss }: SpotDetailSheetProps) {
               <>
                 {conditions && conditions.length > 0 ? (
                   conditions.slice(0, 3).map((c) => (
-                    <View key={c.id} style={styles.conditionCard}>
-                      <View style={styles.conditionRow}>
-                        {c.waveHeight != null && (
-                          <Text style={styles.conditionValue}>
-                            {c.waveHeight >= 2.5 ? '2+' : c.waveHeight.toFixed(1)}m waves
-                          </Text>
-                        )}
-                        {c.windSpeed != null && (
-                          <Text style={styles.conditionValue}>
-                            {c.windSpeed} m/s{c.windDirection != null ? ` ${getCardinalLabel(c.windDirection)} ${c.windDirection}°` : ''}
-                          </Text>
-                        )}
-                      </View>
-                      <Text style={styles.conditionMeta}>
-                        {formatRelativeDate(c.createdAt)}
-                        {c.reporter ? ` by ${c.reporter.username}` : ''}
-                        {c.confirmCount > 0 ? ` · ${c.confirmCount} confirm${c.confirmCount > 1 ? 's' : ''}` : ''}
-                      </Text>
-                      {isAuthenticated && (
-                        <Pressable
-                          style={[
-                            styles.confirmButton,
-                            c.hasConfirmed && styles.confirmButtonDisabled,
-                          ]}
-                          disabled={c.hasConfirmed}
-                          onPress={() => confirmMutation.mutate(c.id)}
-                        >
-                          <Text
-                            style={[
-                              styles.confirmButtonText,
-                              c.hasConfirmed && styles.confirmButtonTextDisabled,
-                            ]}
-                          >
-                            {c.hasConfirmed ? 'Confirmed' : 'Confirm'}
-                          </Text>
-                        </Pressable>
-                      )}
-                    </View>
+                    <ConditionBadge
+                      key={c.id}
+                      condition={c}
+                      showReporter={isAuthenticated}
+                      onConfirm={isAuthenticated ? () => confirmMutation.mutate(c.id) : undefined}
+                      confirmDisabled={c.hasConfirmed}
+                    />
                   ))
                 ) : (
                   <Text style={styles.placeholder}>No condition reports yet</Text>
@@ -167,10 +154,42 @@ export function SpotDetailSheet({ spotId, onDismiss }: SpotDetailSheetProps) {
             )}
           </View>
 
-          {/* Sessions placeholder */}
+          {/* Sessions */}
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Sessions</Text>
-            <Text style={styles.placeholder}>No active sessions</Text>
+            {creatingSession && spotId ? (
+              <SessionForm
+                spotId={spotId}
+                onDone={() => setCreatingSession(false)}
+              />
+            ) : (
+              <>
+                {!isAuthenticated && sessionCount > 0 ? (
+                  <Text style={styles.sessionCount}>
+                    {sessionCount} active {sessionCount === 1 ? 'session' : 'sessions'}
+                  </Text>
+                ) : sessions && sessions.length > 0 ? (
+                  sessions.map((s) => (
+                    <SessionCard
+                      key={s.id}
+                      session={s}
+                      onLeave={s.isOwn ? () => leaveMutation.mutate(s.id) : undefined}
+                      leaveLoading={leaveMutation.isPending}
+                    />
+                  ))
+                ) : (
+                  <Text style={styles.placeholder}>No active sessions</Text>
+                )}
+                {isAuthenticated && !hasOwnSession && (
+                  <Pressable
+                    style={styles.goingButton}
+                    onPress={() => setCreatingSession(true)}
+                  >
+                    <Text style={styles.goingButtonText}>I'm Going</Text>
+                  </Pressable>
+                )}
+              </>
+            )}
           </View>
 
           {/* Footer */}
@@ -211,54 +230,10 @@ const styles = StyleSheet.create({
     color: '#333',
     marginBottom: 6,
   },
-  sectionContent: {
-    fontSize: 14,
-    color: '#555',
-    lineHeight: 20,
-  },
   placeholder: {
     fontSize: 14,
     color: '#999',
     fontStyle: 'italic',
-  },
-  conditionCard: {
-    backgroundColor: '#F8FAFC',
-    borderRadius: 8,
-    padding: 10,
-    marginBottom: 8,
-  },
-  conditionRow: {
-    flexDirection: 'row',
-    gap: 12,
-  },
-  conditionValue: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#333',
-  },
-  conditionMeta: {
-    fontSize: 12,
-    color: '#888',
-    marginTop: 4,
-  },
-  confirmButton: {
-    height: 48,
-    borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 8,
-    backgroundColor: '#E0F2FE',
-  },
-  confirmButtonDisabled: {
-    backgroundColor: '#F1F5F9',
-  },
-  confirmButtonText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#0284C7',
-  },
-  confirmButtonTextDisabled: {
-    color: '#94A3B8',
   },
   reportButton: {
     backgroundColor: '#0284C7',
@@ -271,6 +246,24 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 14,
     fontWeight: '600',
+  },
+  goingButton: {
+    backgroundColor: '#10B981',
+    paddingVertical: 10,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginTop: 4,
+  },
+  goingButtonText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  sessionCount: {
+    fontSize: 14,
+    color: '#10B981',
+    fontWeight: '600',
+    marginBottom: 4,
   },
   footer: {
     borderTopWidth: StyleSheet.hairlineWidth,

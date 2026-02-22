@@ -4,6 +4,7 @@ export interface Spot {
   latitude: number;
   longitude: number;
   createdAt: string;
+  sessionCount: number;
 }
 
 export interface SpotDetail {

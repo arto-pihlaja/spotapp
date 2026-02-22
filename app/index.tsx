@@ -9,6 +9,8 @@ import { useSpots } from '@/features/spots/hooks/useSpots';
 import { useDebounce } from '@/lib/useDebounce';
 import { CreateSpotModal } from '@/features/spots/components/CreateSpotModal';
 import { SpotDetailSheet } from '@/features/spots/components/SpotDetailSheet';
+import { TimeSlider } from '@/features/sessions/components/TimeSlider';
+import type { TimeWindow } from '@/features/sessions/components/TimeSlider';
 import { useSocketEvent } from '@/lib/useSocketEvent';
 import { queryClient } from '@/lib/queryClient';
 import type { Region, MapMarker } from '@/types/map';
@@ -20,10 +22,11 @@ export default function MapScreen() {
   const clearAuth = useAuthStore((s) => s.clearAuth);
   const [locationDenied, setLocationDenied] = useState(false);
   const [createCoord, setCreateCoord] = useState<{ latitude: number; longitude: number } | null>(null);
+  const [timeFilter, setTimeFilter] = useState<TimeWindow | undefined>(undefined);
 
   // Debounce region to avoid excessive API calls during pan/zoom
   const debouncedRegion = useDebounce(region, 300);
-  const { data: spots } = useSpots(debouncedRegion);
+  const { data: spots } = useSpots(debouncedRegion, timeFilter);
 
   // Invalidate spots list when a new spot is created via socket
   const handleSpotCreated = useCallback(() => {
@@ -38,6 +41,7 @@ export default function MapScreen() {
         latitude: spot.latitude,
         longitude: spot.longitude,
         title: spot.name,
+        sessionCount: spot.sessionCount,
       })) ?? [],
     [spots],
   );
@@ -97,6 +101,11 @@ export default function MapScreen() {
         onLongPress={handleLongPress}
       />
 
+      {/* Time slider */}
+      <View style={styles.timeSliderContainer}>
+        <TimeSlider onChange={setTimeFilter} />
+      </View>
+
       {/* Account button */}
       <Pressable
         style={styles.accountButton}
@@ -142,6 +151,12 @@ export default function MapScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  timeSliderContainer: {
+    position: 'absolute',
+    top: 48,
+    right: 16,
+    zIndex: 10,
   },
   fab: {
     position: 'absolute',

@@ -13,11 +13,9 @@ enum UserRole {
 }
 
 enum SportType {
-  SURF
   WING_FOIL
-  KITE
-  SUP
   WINDSURF
+  KITE
   OTHER
 }
 

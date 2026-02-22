@@ -59,7 +59,12 @@ export async function getSpotById(spotId: string) {
   });
 }
 
-export async function getSpotsByViewport(viewport: Viewport) {
+interface TimeFilter {
+  timeFrom?: string;
+  timeTo?: string;
+}
+
+export async function getSpotsByViewport(viewport: Viewport, timeFilter?: TimeFilter) {
   const spots = await prisma.spot.findMany({
     where: {
       latitude: { gte: viewport.swLat, lte: viewport.neLat },
@@ -71,9 +76,40 @@ export async function getSpotsByViewport(viewport: Viewport) {
       latitude: true,
       longitude: true,
       createdAt: true,
+      _count: {
+        select: {
+          sessions: {
+            where: {
+              AND: [
+                // Not expired
+                {
+                  OR: [
+                    { expiresAt: null },
+                    { expiresAt: { gt: new Date() } },
+                  ],
+                },
+                // Within time window (if specified)
+                ...(timeFilter?.timeFrom
+                  ? [{ scheduledAt: { gte: new Date(timeFilter.timeFrom) } }]
+                  : []),
+                ...(timeFilter?.timeTo
+                  ? [{ scheduledAt: { lte: new Date(timeFilter.timeTo) } }]
+                  : []),
+              ],
+            },
+          },
+        },
+      },
     },
     orderBy: { name: 'asc' },
   });
 
-  return spots;
+  return spots.map((spot) => ({
+    id: spot.id,
+    name: spot.name,
+    latitude: spot.latitude,
+    longitude: spot.longitude,
+    createdAt: spot.createdAt,
+    sessionCount: spot._count.sessions,
+  }));
 }

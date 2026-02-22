@@ -1,16 +1,24 @@
 import { api } from '@/lib/apiClient';
 import type { Spot, SpotDetail } from '../types';
 
-interface Viewport {
+export interface Viewport {
   swLat: number;
   swLng: number;
   neLat: number;
   neLng: number;
 }
 
-export async function fetchSpotsByViewport(viewport: Viewport): Promise<Spot[]> {
+export interface TimeFilter {
+  timeFrom?: string;
+  timeTo?: string;
+}
+
+export async function fetchSpotsByViewport(viewport: Viewport, timeFilter?: TimeFilter): Promise<Spot[]> {
   const vp = `${viewport.swLat},${viewport.swLng},${viewport.neLat},${viewport.neLng}`;
-  const res = await api.get<Spot[]>(`/spots?viewport=${vp}`);
+  const params = new URLSearchParams({ viewport: vp });
+  if (timeFilter?.timeFrom) params.set('timeFrom', timeFilter.timeFrom);
+  if (timeFilter?.timeTo) params.set('timeTo', timeFilter.timeTo);
+  const res = await api.get<Spot[]>(`/spots?${params.toString()}`);
   return res.data;
 }
 

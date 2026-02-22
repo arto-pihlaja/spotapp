@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { fetchSpotsByViewport } from '../api/spots';
+import type { TimeFilter } from '../api/spots';
 import type { Region } from '@/types/map';
 
 function regionToViewport(region: Region) {
@@ -11,12 +12,12 @@ function regionToViewport(region: Region) {
   };
 }
 
-export function useSpots(region: Region) {
+export function useSpots(region: Region, timeFilter?: TimeFilter) {
   const viewport = regionToViewport(region);
 
   return useQuery({
-    queryKey: ['spots', viewport],
-    queryFn: () => fetchSpotsByViewport(viewport),
+    queryKey: ['spots', viewport, timeFilter],
+    queryFn: () => fetchSpotsByViewport(viewport, timeFilter),
     staleTime: 30_000,
   });
 }
