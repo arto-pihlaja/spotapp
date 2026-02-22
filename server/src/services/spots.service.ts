@@ -76,6 +76,16 @@ export async function getSpotsByViewport(viewport: Viewport, timeFilter?: TimeFi
       latitude: true,
       longitude: true,
       createdAt: true,
+      conditionReports: {
+        orderBy: { createdAt: 'desc' },
+        take: 1,
+        select: {
+          waveHeight: true,
+          windSpeed: true,
+          windDirection: true,
+          createdAt: true,
+        },
+      },
       _count: {
         select: {
           sessions: {
@@ -111,5 +121,13 @@ export async function getSpotsByViewport(viewport: Viewport, timeFilter?: TimeFi
     longitude: spot.longitude,
     createdAt: spot.createdAt,
     sessionCount: spot._count.sessions,
+    latestCondition: spot.conditionReports[0]
+      ? {
+          waveHeight: spot.conditionReports[0].waveHeight,
+          windSpeed: spot.conditionReports[0].windSpeed,
+          windDirection: spot.conditionReports[0].windDirection,
+          createdAt: spot.conditionReports[0].createdAt,
+        }
+      : null,
   }));
 }

@@ -13,6 +13,7 @@ import { TimeSlider } from '@/features/sessions/components/TimeSlider';
 import type { TimeWindow } from '@/features/sessions/components/TimeSlider';
 import { useSocketEvent } from '@/lib/useSocketEvent';
 import { queryClient } from '@/lib/queryClient';
+import { useClusters } from '@/lib/useClusters';
 import type { Region, MapMarker } from '@/types/map';
 
 export default function MapScreen() {
@@ -42,9 +43,12 @@ export default function MapScreen() {
         longitude: spot.longitude,
         title: spot.name,
         sessionCount: spot.sessionCount,
+        latestCondition: spot.latestCondition ?? undefined,
       })) ?? [],
     [spots],
   );
+
+  const { displayItems } = useClusters(markers, region);
 
   const centerOnUser = useCallback(async () => {
     const { status } = await Location.requestForegroundPermissionsAsync();
@@ -96,6 +100,7 @@ export default function MapScreen() {
       <MapView
         region={region}
         markers={markers}
+        displayItems={displayItems}
         onRegionChange={handleRegionChange}
         onMarkerPress={handleMarkerPress}
         onLongPress={handleLongPress}

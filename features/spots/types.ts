@@ -1,3 +1,10 @@
+export interface LatestCondition {
+  waveHeight: number | null;
+  windSpeed: number | null;
+  windDirection: string | null;
+  createdAt: string;
+}
+
 export interface Spot {
   id: string;
   name: string;
@@ -5,6 +12,7 @@ export interface Spot {
   longitude: number;
   createdAt: string;
   sessionCount: number;
+  latestCondition: LatestCondition | null;
 }
 
 export interface SpotDetail {
