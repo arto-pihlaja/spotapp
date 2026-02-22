@@ -1,5 +1,5 @@
 ---
-validationTarget: '/root/project/spotapp/_bmad-output/planning-artifacts/prd.md'
+validationTarget: '/opt/spotapp/_bmad-output/planning-artifacts/prd.md'
 validationDate: '2026-02-20'
 inputDocuments:
   - 'prd.md'
@@ -12,7 +12,7 @@ overallStatus: 'Pass'
 
 # PRD Validation Report
 
-**PRD Being Validated:** /root/project/spotapp/_bmad-output/planning-artifacts/prd.md
+**PRD Being Validated:** /opt/spotapp/_bmad-output/planning-artifacts/prd.md
 **Validation Date:** 2026-02-20
 
 ## Input Documents

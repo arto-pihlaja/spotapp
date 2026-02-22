@@ -1,6 +1,9 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { confirmCondition } from '../api/conditions';
 import type { ConditionReport } from '../types';
+import { isNetworkError } from '@/lib/networkError';
+import { enqueueMutation } from '@/lib/offlineQueue';
+import { showToast } from '@/components/Toast';
 
 export function useConfirmCondition(spotId: string) {
   const queryClient = useQueryClient();
@@ -23,9 +26,20 @@ export function useConfirmCondition(spotId: string) {
 
       return { previous };
     },
-    onError: (_err, _conditionId, context) => {
+    onError: (error, conditionId, context) => {
       if (context?.previous) {
         queryClient.setQueryData(['spot', spotId, 'conditions'], context.previous);
+      }
+      if (isNetworkError(error)) {
+        enqueueMutation({
+          type: 'confirmCondition',
+          label: 'Condition confirmation',
+          endpoint: `/spots/${spotId}/conditions/${conditionId}/confirm`,
+          method: 'POST',
+          body: {},
+        });
+      } else {
+        showToast('Failed to confirm condition', 'error');
       }
     },
     onSettled: () => {

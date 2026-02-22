@@ -12,7 +12,7 @@ interface ApiResponse<T> {
   error?: { code: string; message: string };
 }
 
-class ApiError extends Error {
+export class ApiError extends Error {
   constructor(
     public statusCode: number,
     public code: string,

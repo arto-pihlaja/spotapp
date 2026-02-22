@@ -22,7 +22,7 @@ npm run dev                    # starts on http://localhost:3000
 
 The backend responds on port 3000. If the port is already in use, kill the existing process first:
   lsof -ti:3000 | xargs -r kill -9                          
-  cd /root/project/spotapp/server && npx tsx src/server.ts      
+  cd /opt/spotapp/server && npx tsx src/server.ts      
   Test db with command pg_isready
   If it's not running, start it with:
   service postgresql start                    
@@ -31,7 +31,7 @@ The backend responds on port 3000. If the port is already in use, kill the exist
   npx expo start --web
 
   If the database was rebuilt since last time, you'll also need to re-seed first:
-  cd /root/project/spotapp/server && npx prisma migrate dev && npx prisma db seed
+  cd /opt/spotapp/server && npx prisma migrate dev && npx prisma db seed
 
 
 ### 2. Frontend
@@ -90,7 +90,7 @@ psql -U postgres -d spotapp
   - \q — quit
   Alternatively, Prisma Studio gives you a visual UI:
 
-  cd /root/project/spotapp/server && npx prisma studio
+  cd /opt/spotapp/server && npx prisma studio
 
   It opens a web interface (usually on port 5555) where you can browse and edit
   data.
@@ -98,7 +98,7 @@ psql -U postgres -d spotapp
 ## Frontend issue reset
 Try nuking the Metro cache completely and restarting:                             
                                                                                     
-  rm -rf /tmp/metro-* /tmp/haste-map-* /root/project/spotapp/.expo/web && npx expo  
+  rm -rf /tmp/metro-* /tmp/haste-map-* /opt/spotapp/.expo/web && npx expo  
   start --web --clear                                                               
                                                                                     
   If that still fails, it may be that the node_modules got into a bad state. In that

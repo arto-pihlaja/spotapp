@@ -2,6 +2,9 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { createSession } from '../api/sessions';
 import type { CreateSessionInput, SessionsResult } from '../types';
 import { useAuthStore } from '@/stores/useAuthStore';
+import { isNetworkError } from '@/lib/networkError';
+import { enqueueMutation } from '@/lib/offlineQueue';
+import { showToast } from '@/components/Toast';
 
 export function useCreateSession(spotId: string) {
   const queryClient = useQueryClient();
@@ -36,9 +39,20 @@ export function useCreateSession(spotId: string) {
 
       return { previous };
     },
-    onError: (_err, _input, context) => {
+    onError: (error, input, context) => {
       if (context?.previous) {
         queryClient.setQueryData(['spot', spotId, 'sessions'], context.previous);
+      }
+      if (isNetworkError(error)) {
+        enqueueMutation({
+          type: 'createSession',
+          label: 'Session',
+          endpoint: `/spots/${spotId}/sessions`,
+          method: 'POST',
+          body: input,
+        });
+      } else {
+        showToast('Failed to create session', 'error');
       }
     },
     onSettled: () => {

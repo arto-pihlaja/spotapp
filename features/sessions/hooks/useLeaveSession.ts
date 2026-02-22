@@ -1,6 +1,9 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { leaveSession } from '../api/sessions';
 import type { SessionsResult } from '../types';
+import { isNetworkError } from '@/lib/networkError';
+import { enqueueMutation } from '@/lib/offlineQueue';
+import { showToast } from '@/components/Toast';
 
 export function useLeaveSession(spotId: string) {
   const queryClient = useQueryClient();
@@ -22,9 +25,19 @@ export function useLeaveSession(spotId: string) {
 
       return { previous };
     },
-    onError: (_err, _sessionId, context) => {
+    onError: (error, sessionId, context) => {
       if (context?.previous) {
         queryClient.setQueryData(['spot', spotId, 'sessions'], context.previous);
+      }
+      if (isNetworkError(error)) {
+        enqueueMutation({
+          type: 'leaveSession',
+          label: 'Leave session',
+          endpoint: `/spots/${spotId}/sessions/${sessionId}`,
+          method: 'DELETE',
+        });
+      } else {
+        showToast('Failed to leave session', 'error');
       }
     },
     onSettled: () => {
