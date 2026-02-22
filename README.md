@@ -21,7 +21,17 @@ npm run dev                    # starts on http://localhost:3000
 ```
 
 The backend responds on port 3000. If the port is already in use, kill the existing process first:
-  lsof -ti:3000 | xargs -r kill -9
+  lsof -ti:3000 | xargs -r kill -9                          
+  cd /root/project/spotapp/server && npx tsx src/server.ts      
+  Test db with command pg_isready
+  If it's not running, start it with:
+  service postgresql start                    
+                                                                                    
+  Frontend (from project root):
+  npx expo start --web
+
+  If the database was rebuilt since last time, you'll also need to re-seed first:
+  cd /root/project/spotapp/server && npx prisma migrate dev && npx prisma db seed
 
 
 ### 2. Frontend
@@ -29,7 +39,7 @@ The backend responds on port 3000. If the port is already in use, kill the exist
 ```bash
 # from project root
 npm install
-npx expo start --web           # opens on http://localhost:8081
+npx expo start --web --clear        # opens on http://localhost:8081
 ```
 
 ## Architecture
@@ -66,3 +76,32 @@ spotapp/
 ```bash
 npm run validate    # runs frontend typecheck + server typecheck + web build
 ```
+
+## Database
+PostgreSQL has psql. You can connect and explore:
+psql -U postgres -d spotapp                                                       
+                                                                                  
+  Some useful commands once inside:                                                 
+                                                                                    
+  - \dt — list all tables
+  - \d condition_confirmations — show table structure
+  - \d condition_reports — show table structure
+  - SELECT * FROM condition_reports LIMIT 5; — query data
+  - \q — quit
+  Alternatively, Prisma Studio gives you a visual UI:
+
+  cd /root/project/spotapp/server && npx prisma studio
+
+  It opens a web interface (usually on port 5555) where you can browse and edit
+  data.
+
+## Frontend issue reset
+Try nuking the Metro cache completely and restarting:                             
+                                                                                    
+  rm -rf /tmp/metro-* /tmp/haste-map-* /root/project/spotapp/.expo/web && npx expo  
+  start --web --clear                                                               
+                                                                                    
+  If that still fails, it may be that the node_modules got into a bad state. In that
+   case, reinstall:                                                                 
+
+  rm -rf node_modules && npm install && npx expo start --web --clear 

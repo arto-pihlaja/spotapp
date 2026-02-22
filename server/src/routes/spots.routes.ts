@@ -4,6 +4,7 @@ import { viewportQuerySchema, createSpotSchema, spotIdParamSchema } from '../sch
 import { getSpotsByViewport, getSpotById, createSpot } from '../services/spots.service.js';
 import { requireAuth } from '../middleware/authMiddleware.js';
 import { AppError } from '../utils/appError.js';
+import { emitSpotCreated } from '../socket/spotHandlers.js';
 import { z } from 'zod/v4';
 
 const router = Router();
@@ -48,6 +49,8 @@ router.post('/spots', requireAuth, async (req: Request, res: Response) => {
   });
 
   res.status(201).json({ data: spot });
+
+  emitSpotCreated(spot);
 });
 
 export default router;

@@ -9,6 +9,8 @@ import { useSpots } from '@/features/spots/hooks/useSpots';
 import { useDebounce } from '@/lib/useDebounce';
 import { CreateSpotModal } from '@/features/spots/components/CreateSpotModal';
 import { SpotDetailSheet } from '@/features/spots/components/SpotDetailSheet';
+import { useSocketEvent } from '@/lib/useSocketEvent';
+import { queryClient } from '@/lib/queryClient';
 import type { Region, MapMarker } from '@/types/map';
 
 export default function MapScreen() {
@@ -22,6 +24,12 @@ export default function MapScreen() {
   // Debounce region to avoid excessive API calls during pan/zoom
   const debouncedRegion = useDebounce(region, 300);
   const { data: spots } = useSpots(debouncedRegion);
+
+  // Invalidate spots list when a new spot is created via socket
+  const handleSpotCreated = useCallback(() => {
+    queryClient.invalidateQueries({ queryKey: ['spots'] });
+  }, []);
+  useSocketEvent('spot:created', handleSpotCreated);
 
   const markers: MapMarker[] = useMemo(
     () =>
