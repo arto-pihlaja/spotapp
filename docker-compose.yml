@@ -11,5 +11,24 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
 
+  server:
+    profiles:
+      - full
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    depends_on:
+      - db
+    environment:
+      DATABASE_URL: postgresql://spotapp:spotapp@db:5432/spotapp?schema=public
+      JWT_ACCESS_SECRET: dev-access-secret-change-in-production-32chars
+      JWT_REFRESH_SECRET: dev-refresh-secret-change-in-production-32chars
+      PORT: 3000
+      NODE_ENV: development
+      CORS_ORIGIN: http://localhost:8081
+
 volumes:
   pgdata:

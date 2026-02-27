@@ -1,11 +1,8 @@
-import { Platform } from 'react-native';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { refreshTokens } from '@/features/auth/api/auth';
 
-export const BASE_URL = Platform.select({
-  web: 'http://localhost:3000/api/v1',
-  default: 'http://10.0.2.2:3000/api/v1', // Android emulator → host
-});
+const API_BASE = process.env.EXPO_PUBLIC_API_BASE_URL ?? 'http://localhost:3000';
+export const BASE_URL = `${API_BASE}/api/v1`;
 
 interface ApiResponse<T> {
   data: T;

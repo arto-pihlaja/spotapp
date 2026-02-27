@@ -11,7 +11,7 @@ let io: TypedServer | null = null;
 export function setupSocket(httpServer: HttpServer): TypedServer {
   io = new Server<ClientToServerEvents, ServerToClientEvents, Record<string, never>, SocketData>(httpServer, {
     cors: {
-      origin: env.CORS_ORIGIN,
+      origin: env.CORS_ORIGIN.split(','),
       methods: ['GET', 'POST'],
     },
   });

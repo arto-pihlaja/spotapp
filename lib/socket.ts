@@ -1,13 +1,9 @@
 import { io, Socket } from 'socket.io-client';
-import { Platform } from 'react-native';
 import type { ServerToClientEvents, ClientToServerEvents } from '@/types/socket';
 
 type TypedSocket = Socket<ServerToClientEvents, ClientToServerEvents>;
 
-const SERVER_URL = Platform.select({
-  web: 'http://localhost:3000',
-  default: 'http://10.0.2.2:3000', // Android emulator → host
-});
+const SERVER_URL = process.env.EXPO_PUBLIC_API_BASE_URL ?? 'http://localhost:3000';
 
 let socket: TypedSocket | null = null;
 
