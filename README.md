@@ -22,14 +22,16 @@ npm run dev                    # starts on http://localhost:3000
 
 The backend responds on port 3000. If the port is already in use, kill the existing process first:
   lsof -ti:3000 | xargs -r kill -9                          
-  cd /opt/spotapp/server && npx tsx src/server.ts      
-  Test db with command pg_isready
-  If it's not running, start it with:
-  service postgresql start                    
+  cd /opt/spotapp/server && npx tsx src/server.ts  
                                                                                     
   Frontend (from project root):
   npx expo start --web
 
+    
+  Test db with command pg_isready
+  If it's not running, start it with:
+  service postgresql start                    
+  
   If the database was rebuilt since last time, you'll also need to re-seed first:
   cd /opt/spotapp/server && npx prisma migrate dev && npx prisma db seed
 

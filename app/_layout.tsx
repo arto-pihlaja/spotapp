@@ -39,6 +39,7 @@ export default function RootLayout() {
           <Stack.Screen name="(auth)" options={{ headerShown: false }} />
           <Stack.Screen name="(admin)" options={{ title: 'Admin' }} />
           <Stack.Screen name="spot/[spotId]" options={{ title: 'Spot Details' }} />
+          <Stack.Screen name="profile/[userId]" options={{ title: 'Profile' }} />
         </Stack>
         <Toast />
         <StatusBar style="auto" />

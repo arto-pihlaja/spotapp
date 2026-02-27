@@ -6,3 +6,11 @@ export const createInvitationCodeSchema = z.object({
 });
 
 export type CreateInvitationCodeInput = z.infer<typeof createInvitationCodeSchema>;
+
+export const listAuditLogsSchema = z.object({
+  page: z.coerce.number().int().min(1).default(1),
+  limit: z.coerce.number().int().min(1).max(100).default(20),
+  action: z.enum(['USER_BLOCKED', 'USER_UNBLOCKED', 'SPOT_DELETED', 'WIKI_REVERTED']).optional(),
+});
+
+export type ListAuditLogsInput = z.infer<typeof listAuditLogsSchema>;

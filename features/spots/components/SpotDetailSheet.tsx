@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { StyleSheet, View, Text, ActivityIndicator, Pressable } from 'react-native';
+import { useRouter } from 'expo-router';
 import { BottomSheet } from '@/components/BottomSheet';
 import { useSpot } from '../hooks/useSpot';
 import { WikiView } from '@/features/wiki/components/WikiView';
@@ -35,6 +36,7 @@ function formatRelativeDate(dateStr: string): string {
 }
 
 export function SpotDetailSheet({ spotId, onDismiss }: SpotDetailSheetProps) {
+  const router = useRouter();
   const { data: spot, isLoading, error, refetch } = useSpot(spotId);
   const { data: wiki } = useWiki(spotId);
   const { data: conditions } = useConditions(spotId);
@@ -195,7 +197,20 @@ export function SpotDetailSheet({ spotId, onDismiss }: SpotDetailSheetProps) {
           {/* Footer */}
           <View style={styles.footer}>
             <Text style={styles.footerText}>
-              Added by {spot.creator.username} {formatRelativeDate(spot.createdAt)}
+              {spot.creator ? (
+                <>
+                  Added by{' '}
+                  <Text
+                    style={styles.creatorLink}
+                    onPress={() => router.push(`/profile/${spot.creator!.id}`)}
+                  >
+                    {spot.creator.username}
+                  </Text>
+                  {' '}{formatRelativeDate(spot.createdAt)}
+                </>
+              ) : (
+                `Added ${formatRelativeDate(spot.createdAt)}`
+              )}
             </Text>
           </View>
         </View>
@@ -274,6 +289,9 @@ const styles = StyleSheet.create({
   footerText: {
     fontSize: 12,
     color: '#999',
+  },
+  creatorLink: {
+    color: '#0284C7',
   },
   errorText: {
     fontSize: 15,

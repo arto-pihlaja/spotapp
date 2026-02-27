@@ -645,7 +645,7 @@ So that other users can see I'm planning to go.
 
 **Given** I'm authenticated and viewing a spot detail
 **When** I tap "I'm Going"
-**Then** I see time presets (Now, +1h, +2h, +3h, Custom) and sport selector (surf, wing foil, kite, SUP, windsurf, other)
+**Then** I see time presets (Now, +1h, +2h, +3h, Custom) and sport selector (wing foil, kite, windsurf, other)
 
 **Given** I select "Now" and "Surf"
 **When** I confirm

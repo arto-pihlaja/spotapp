@@ -1,7 +1,6 @@
 import { useEffect, useCallback, useMemo, useState } from 'react';
-import { StyleSheet, View, Pressable, Text, Platform } from 'react-native';
+import { StyleSheet, View, Pressable, Text } from 'react-native';
 import * as Location from 'expo-location';
-import { useRouter } from 'expo-router';
 import MapView from '@/components/MapView';
 import { useMapStore } from '@/stores/useMapStore';
 import { useAuthStore } from '@/stores/useAuthStore';
@@ -14,13 +13,11 @@ import type { TimeWindow } from '@/features/sessions/components/TimeSlider';
 import { useSocketEvent } from '@/lib/useSocketEvent';
 import { queryClient } from '@/lib/queryClient';
 import { useClusters } from '@/lib/useClusters';
+import { AccountMenu } from '@/components/AccountMenu';
 import type { Region, MapMarker } from '@/types/map';
 
 export default function MapScreen() {
-  const router = useRouter();
   const { region, setRegion, selectSpot, selectedSpotId } = useMapStore();
-  const user = useAuthStore((s) => s.user);
-  const clearAuth = useAuthStore((s) => s.clearAuth);
   const [locationDenied, setLocationDenied] = useState(false);
   const [createCoord, setCreateCoord] = useState<{ latitude: number; longitude: number } | null>(null);
   const [timeFilter, setTimeFilter] = useState<TimeWindow | undefined>(undefined);
@@ -111,23 +108,7 @@ export default function MapScreen() {
         <TimeSlider onChange={setTimeFilter} />
       </View>
 
-      {/* Account button */}
-      <Pressable
-        style={styles.accountButton}
-        onPress={() => {
-          if (user) {
-            clearAuth();
-          } else {
-            router.push('/login');
-          }
-        }}
-        accessibilityLabel={user ? 'Log out' : 'Log in'}
-        accessibilityRole="button"
-      >
-        <Text style={styles.accountText} numberOfLines={1}>
-          {user ? user.username : 'Log In'}
-        </Text>
-      </Pressable>
+      <AccountMenu />
 
       {/* Find Me FAB */}
       <Pressable
@@ -182,26 +163,5 @@ const styles = StyleSheet.create({
   },
   fabIcon: {
     fontSize: 24,
-  },
-  accountButton: {
-    position: 'absolute',
-    top: 48,
-    left: 16,
-    zIndex: 10,
-    backgroundColor: '#fff',
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 20,
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.2,
-    shadowRadius: 3,
-    maxWidth: 140,
-  },
-  accountText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#0284C7',
   },
 });

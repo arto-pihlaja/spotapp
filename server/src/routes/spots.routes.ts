@@ -2,14 +2,14 @@ import { Router } from 'express';
 import type { Request, Response } from 'express';
 import { viewportQuerySchema, createSpotSchema, spotIdParamSchema } from '../schemas/spots.schema.js';
 import { getSpotsByViewport, getSpotById, createSpot } from '../services/spots.service.js';
-import { requireAuth } from '../middleware/authMiddleware.js';
+import { requireAuth, optionalAuth } from '../middleware/authMiddleware.js';
 import { AppError } from '../utils/appError.js';
 import { emitSpotCreated } from '../socket/spotHandlers.js';
 import { z } from 'zod/v4';
 
 const router = Router();
 
-router.get('/spots', async (req: Request, res: Response) => {
+router.get('/spots', optionalAuth, async (req: Request, res: Response) => {
   const result = viewportQuerySchema.safeParse(req.query);
   if (!result.success) {
     throw new AppError(400, 'VALIDATION_ERROR', z.prettifyError(result.error));
@@ -26,7 +26,7 @@ router.get('/spots', async (req: Request, res: Response) => {
   });
 });
 
-router.get('/spots/:spotId', async (req: Request, res: Response) => {
+router.get('/spots/:spotId', optionalAuth, async (req: Request, res: Response) => {
   const result = spotIdParamSchema.safeParse(req.params);
   if (!result.success) {
     throw new AppError(400, 'VALIDATION_ERROR', 'Invalid spot ID format');
@@ -37,7 +37,10 @@ router.get('/spots/:spotId', async (req: Request, res: Response) => {
     throw new AppError(404, 'NOT_FOUND', 'Spot not found');
   }
 
-  res.json({ data: spot });
+  // Strip creator info for anonymous users
+  const data = req.user ? spot : { ...spot, creator: null };
+
+  res.json({ data });
 });
 
 router.post('/spots', requireAuth, async (req: Request, res: Response) => {

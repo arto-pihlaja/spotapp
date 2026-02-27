@@ -1,4 +1,5 @@
 import { StyleSheet, View, Text, Pressable } from 'react-native';
+import { useRouter } from 'expo-router';
 import type { ConditionReport } from '../types';
 import { getCardinalLabel } from '../types';
 import { getRecencyInfo } from '../utils/recency';
@@ -50,6 +51,7 @@ export function ConditionBadge({
   onConfirm,
   confirmDisabled,
 }: ConditionBadgeProps) {
+  const router = useRouter();
   const { color: recencyColor } = getRecencyInfo(c.createdAt);
   const cardinal = c.windDirection != null ? getCardinalLabel(c.windDirection) : null;
   const arrow = cardinal ? DIRECTION_ARROWS[cardinal] ?? '' : '';
@@ -90,7 +92,14 @@ export function ConditionBadge({
       {/* Meta row */}
       <View style={styles.metaRow}>
         <Text style={styles.metaText}>
-          {showReporter && c.reporter ? c.reporter.username : 'Anonymous'}
+          {showReporter && c.reporter ? (
+            <Text
+              style={styles.reporterLink}
+              onPress={() => router.push(`/profile/${c.reporter!.id}`)}
+            >
+              {c.reporter.username}
+            </Text>
+          ) : 'Anonymous'}
           {c.confirmCount > 0
             ? ` \u00B7 ${c.confirmCount} confirm${c.confirmCount > 1 ? 's' : ''}`
             : ''}
@@ -161,6 +170,9 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#64748B',
     flex: 1,
+  },
+  reporterLink: {
+    color: '#0284C7',
   },
   confirmChip: {
     paddingHorizontal: 14,

@@ -47,6 +47,7 @@ export const TIME_PRESETS = [
   { label: '+1h', value: '+1h' },
   { label: '+2h', value: '+2h' },
   { label: '+3h', value: '+3h' },
+  { label: 'Custom', value: 'custom' },
 ] as const;
 
 export type TimePreset = (typeof TIME_PRESETS)[number]['value'];

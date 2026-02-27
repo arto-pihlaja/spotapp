@@ -32,7 +32,7 @@ router.post(
 );
 
 // POST /auth/login
-router.post('/auth/login', async (req: Request, res: Response) => {
+router.post('/auth/login', rateLimit(5, 60_000), async (req: Request, res: Response) => {
   const result = loginSchema.safeParse(req.body);
   if (!result.success) {
     throw new AppError(400, 'VALIDATION_ERROR', z.prettifyError(result.error));
@@ -43,7 +43,7 @@ router.post('/auth/login', async (req: Request, res: Response) => {
 });
 
 // POST /auth/refresh
-router.post('/auth/refresh', async (req: Request, res: Response) => {
+router.post('/auth/refresh', rateLimit(20, 60_000), async (req: Request, res: Response) => {
   const result = refreshSchema.safeParse(req.body);
   if (!result.success) {
     throw new AppError(400, 'VALIDATION_ERROR', z.prettifyError(result.error));

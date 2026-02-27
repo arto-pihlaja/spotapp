@@ -6,6 +6,8 @@ export interface ServerToClientEvents {
   'session:expired': (payload: { spotId: string; sessionId: string }) => void;
   'spot:created': (payload: { spot: unknown }) => void;
   'spot:updated': (payload: { spot: unknown }) => void;
+  'spot:deleted': (payload: { spotId: string }) => void;
+  'moderation:action': (payload: { action: string; targetType: string; targetId: string; adminId: string; timestamp: string }) => void;
 }
 
 export interface ClientToServerEvents {

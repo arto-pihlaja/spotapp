@@ -1,7 +1,8 @@
 import { Platform } from 'react-native';
 import { useAuthStore } from '@/stores/useAuthStore';
+import { refreshTokens } from '@/features/auth/api/auth';
 
-const BASE_URL = Platform.select({
+export const BASE_URL = Platform.select({
   web: 'http://localhost:3000/api/v1',
   default: 'http://10.0.2.2:3000/api/v1', // Android emulator → host
 });
@@ -23,7 +24,10 @@ export class ApiError extends Error {
   }
 }
 
-async function request<T>(path: string, options?: RequestInit): Promise<ApiResponse<T>> {
+// Mutex to prevent concurrent refresh attempts
+let refreshPromise: Promise<void> | null = null;
+
+async function request<T>(path: string, options?: RequestInit, isRetry = false): Promise<ApiResponse<T>> {
   const url = `${BASE_URL}${path}`;
   const token = useAuthStore.getState().accessToken;
 
@@ -35,6 +39,34 @@ async function request<T>(path: string, options?: RequestInit): Promise<ApiRespo
       ...options?.headers,
     },
   });
+
+  // Handle 401: attempt token refresh (only once)
+  if (res.status === 401 && !isRetry) {
+    const storedRefreshToken = useAuthStore.getState().refreshToken;
+
+    if (storedRefreshToken) {
+      try {
+        // Use mutex so concurrent 401s share a single refresh request
+        if (!refreshPromise) {
+          refreshPromise = refreshTokens(storedRefreshToken).then((data) => {
+            useAuthStore.getState().setTokens(data.accessToken, data.refreshToken, data.user);
+          });
+        }
+        await refreshPromise;
+      } catch {
+        useAuthStore.getState().clearAuth();
+        throw new ApiError(401, 'TOKEN_REFRESH_FAILED', 'Session expired');
+      } finally {
+        refreshPromise = null;
+      }
+
+      // Retry original request with new token
+      return request<T>(path, options, true);
+    }
+
+    // No refresh token — can't recover
+    throw new ApiError(401, 'UNAUTHORIZED', 'Not authenticated');
+  }
 
   const json = await res.json();
 

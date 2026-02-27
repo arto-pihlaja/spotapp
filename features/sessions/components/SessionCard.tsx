@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { StyleSheet, View, Text, Pressable } from 'react-native';
+import { useRouter } from 'expo-router';
 import type { Session } from '../types';
 import { SPORT_EMOJI } from '../types';
 
@@ -64,6 +65,7 @@ function useCountdown(expiresAt: string | null): string | null {
 }
 
 export function SessionCard({ session, onLeave, leaveLoading }: SessionCardProps) {
+  const router = useRouter();
   const typeLabel = session.type === 'NOW' ? 'Going' : 'Planned';
   const typeColor = session.type === 'NOW' ? '#10B981' : '#0284C7';
   const countdown = useCountdown(session.type === 'NOW' ? session.expiresAt : null);
@@ -74,7 +76,12 @@ export function SessionCard({ session, onLeave, leaveLoading }: SessionCardProps
         <Text style={styles.typeBadgeText}>{typeLabel}</Text>
       </View>
       <View style={styles.info}>
-        <Text style={styles.username}>{session.user.username}</Text>
+        <Text
+          style={[styles.username, styles.usernameLink]}
+          onPress={() => router.push(`/profile/${session.user.id}`)}
+        >
+          {session.user.username}
+        </Text>
         <Text style={styles.details}>
           {SPORT_EMOJI[session.sportType] ?? ''} {SPORT_LABELS[session.sportType] ?? session.sportType} · {formatSessionTime(session.scheduledAt, session.type)}
           {countdown ? ` · ${countdown}` : ''}
@@ -123,6 +130,9 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     color: '#1a1a1a',
+  },
+  usernameLink: {
+    color: '#0284C7',
   },
   details: {
     fontSize: 12,

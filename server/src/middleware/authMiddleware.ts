@@ -1,5 +1,6 @@
 import type { Request, Response, NextFunction } from 'express';
 import { verifyAccessToken } from '../utils/jwt.js';
+import { prisma } from '../config/prisma.js';
 import { AppError } from '../utils/appError.js';
 
 // Extend Express Request to include user
@@ -36,8 +37,9 @@ export function optionalAuth(req: Request, _res: Response, next: NextFunction) {
 
 /**
  * Requires a valid JWT. Returns 401 if not authenticated.
+ * Also checks if the user's account has been blocked.
  */
-export function requireAuth(req: Request, _res: Response, next: NextFunction) {
+export async function requireAuth(req: Request, _res: Response, next: NextFunction) {
   const header = req.headers.authorization;
   if (!header?.startsWith('Bearer ')) {
     throw new AppError(401, 'UNAUTHORIZED', 'Authentication required');
@@ -48,6 +50,15 @@ export function requireAuth(req: Request, _res: Response, next: NextFunction) {
     req.user = verifyAccessToken(token);
   } catch {
     throw new AppError(401, 'UNAUTHORIZED', 'Invalid or expired token');
+  }
+
+  const dbUser = await prisma.user.findUnique({
+    where: { id: req.user!.userId },
+    select: { isBlocked: true },
+  });
+
+  if (dbUser?.isBlocked) {
+    throw new AppError(403, 'ACCOUNT_BLOCKED', 'Account blocked');
   }
 
   next();

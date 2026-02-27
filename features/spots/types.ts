@@ -21,7 +21,7 @@ export interface SpotDetail {
   latitude: number;
   longitude: number;
   createdAt: string;
-  creator: { id: string; username: string };
+  creator: { id: string; username: string } | null;
   wikiContent: { content: string; updatedAt: string } | null;
 }
 
