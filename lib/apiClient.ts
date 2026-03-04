@@ -1,8 +1,8 @@
 import { useAuthStore } from '@/stores/useAuthStore';
 import { refreshTokens } from '@/features/auth/api/auth';
+import { SERVER_URL } from '@/lib/getDevServerUrl';
 
-const API_BASE = process.env.EXPO_PUBLIC_API_BASE_URL ?? 'http://localhost:3000';
-export const BASE_URL = `${API_BASE}/api/v1`;
+export const BASE_URL = `${SERVER_URL}/api/v1`;
 
 interface ApiResponse<T> {
   data: T;

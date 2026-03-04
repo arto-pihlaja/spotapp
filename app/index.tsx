@@ -1,4 +1,4 @@
-import { useEffect, useCallback, useMemo, useState } from 'react';
+import { useEffect, useCallback, useMemo, useState, useRef } from 'react';
 import { StyleSheet, View, Pressable, Text } from 'react-native';
 import * as Location from 'expo-location';
 import MapView from '@/components/MapView';
@@ -14,10 +14,11 @@ import { useSocketEvent } from '@/lib/useSocketEvent';
 import { queryClient } from '@/lib/queryClient';
 import { useClusters } from '@/lib/useClusters';
 import { AccountMenu } from '@/components/AccountMenu';
-import type { Region, MapMarker } from '@/types/map';
+import type { Region, MapMarker, MapViewHandle } from '@/types/map';
 
 export default function MapScreen() {
   const { region, setRegion, selectSpot, selectedSpotId } = useMapStore();
+  const mapViewRef = useRef<MapViewHandle>(null);
   const [locationDenied, setLocationDenied] = useState(false);
   const [createCoord, setCreateCoord] = useState<{ latitude: number; longitude: number } | null>(null);
   const [timeFilter, setTimeFilter] = useState<TimeWindow | undefined>(undefined);
@@ -48,19 +49,25 @@ export default function MapScreen() {
   const { displayItems } = useClusters(markers, region);
 
   const centerOnUser = useCallback(async () => {
-    const { status } = await Location.requestForegroundPermissionsAsync();
-    if (status !== 'granted') {
-      setLocationDenied(true);
-      return;
+    try {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        setLocationDenied(true);
+        return;
+      }
+      setLocationDenied(false);
+      const loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
+      const newRegion: Region = {
+        latitude: loc.coords.latitude,
+        longitude: loc.coords.longitude,
+        latitudeDelta: region.latitudeDelta,
+        longitudeDelta: region.longitudeDelta,
+      };
+      setRegion(newRegion);
+      mapViewRef.current?.animateToRegion(newRegion);
+    } catch (err) {
+      console.warn('[SpotApp] centerOnUser failed:', err);
     }
-    setLocationDenied(false);
-    const loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
-    setRegion({
-      latitude: loc.coords.latitude,
-      longitude: loc.coords.longitude,
-      latitudeDelta: region.latitudeDelta,
-      longitudeDelta: region.longitudeDelta,
-    });
   }, [region.latitudeDelta, region.longitudeDelta, setRegion]);
 
   // Center on user location on first load
@@ -95,6 +102,7 @@ export default function MapScreen() {
   return (
     <View style={styles.container}>
       <MapView
+        ref={mapViewRef}
         region={region}
         markers={markers}
         displayItems={displayItems}

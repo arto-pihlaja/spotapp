@@ -1,9 +1,8 @@
 import { io, Socket } from 'socket.io-client';
 import type { ServerToClientEvents, ClientToServerEvents } from '@/types/socket';
+import { SERVER_URL } from '@/lib/getDevServerUrl';
 
 type TypedSocket = Socket<ServerToClientEvents, ClientToServerEvents>;
-
-const SERVER_URL = process.env.EXPO_PUBLIC_API_BASE_URL ?? 'http://localhost:3000';
 
 let socket: TypedSocket | null = null;
 

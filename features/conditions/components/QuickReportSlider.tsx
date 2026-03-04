@@ -117,15 +117,15 @@ export function QuickReportSlider({ spotId, onDone }: QuickReportSliderProps) {
         <Slider
           style={styles.slider}
           minimumValue={0}
-          maximumValue={2.5}
-          step={0.5}
-          value={waveHeight}
-          onValueChange={setWaveHeight}
+          maximumValue={5}
+          step={1}
+          value={waveHeight * 2}
+          onValueChange={(v) => setWaveHeight(v / 2)}
           minimumTrackTintColor="#0284C7"
           maximumTrackTintColor="#E2E8F0"
           thumbTintColor="#0284C7"
           accessibilityLabel="Wave height in meters"
-          accessibilityValue={{ min: 0, max: 2.5, now: waveHeight }}
+          accessibilityValue={{ min: 0, max: 5, now: waveHeight * 2 }}
         />
         <View style={styles.sliderLabels}>
           <Text style={styles.sliderLabel}>0 m</Text>

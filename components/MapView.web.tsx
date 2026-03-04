@@ -1,5 +1,5 @@
-import { useEffect, useRef, useCallback, useState } from 'react';
-import type { MapViewProps, Region, MapMarker } from '@/types/map';
+import { useEffect, useRef, useCallback, useState, forwardRef, useImperativeHandle } from 'react';
+import type { MapViewProps, MapViewHandle, Region, MapMarker } from '@/types/map';
 
 // Dynamically load MapLibre GL from CDN (avoids Metro import.meta issue)
 function loadMapLibre(): Promise<any> {
@@ -107,13 +107,23 @@ function regionToZoom(region: Region): number {
   return Math.round(Math.log2(360 / region.latitudeDelta));
 }
 
-export default function MapView({ region, markers, displayItems, onRegionChange, onMarkerPress, onLongPress }: MapViewProps) {
+export default forwardRef<MapViewHandle, MapViewProps>(function MapView({ region, markers, displayItems, onRegionChange, onMarkerPress, onLongPress }, ref) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<any>(null);
   const markersRef = useRef<any[]>([]);
   const [ready, setReady] = useState(false);
   const onLongPressRef = useRef(onLongPress);
   onLongPressRef.current = onLongPress;
+
+  useImperativeHandle(ref, () => ({
+    animateToRegion(targetRegion: Region, duration = 500) {
+      mapRef.current?.flyTo({
+        center: [targetRegion.longitude, targetRegion.latitude],
+        zoom: regionToZoom(targetRegion),
+        duration,
+      });
+    },
+  }));
 
   const handleMoveEnd = useCallback(() => {
     const map = mapRef.current;
@@ -296,4 +306,4 @@ export default function MapView({ region, markers, displayItems, onRegionChange,
       }}
     />
   );
-}
+});

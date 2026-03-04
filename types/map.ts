@@ -1,3 +1,7 @@
+export interface MapViewHandle {
+  animateToRegion: (region: Region, duration?: number) => void;
+}
+
 export interface Region {
   latitude: number;
   longitude: number;

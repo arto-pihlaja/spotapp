@@ -1,7 +1,7 @@
-import { useCallback, useRef } from 'react';
+import { useCallback, useRef, forwardRef, useImperativeHandle } from 'react';
 import { StyleSheet, View, Text } from 'react-native';
 import NativeMapView, { Marker, Callout, type Region as NativeRegion } from 'react-native-maps';
-import type { MapViewProps, MapDisplayItem, MapMarker } from '@/types/map';
+import type { MapViewProps, MapViewHandle, MapDisplayItem, MapMarker, Region } from '@/types/map';
 
 const WIND_ARROWS: Record<string, string> = {
   N: '\u2193', S: '\u2191', E: '\u2190', W: '\u2192',
@@ -63,8 +63,22 @@ function expansionZoomToRegion(lat: number, lng: number, zoom: number) {
   };
 }
 
-export default function MapView({ region, markers, displayItems, onRegionChange, onMarkerPress, onLongPress }: MapViewProps) {
+export default forwardRef<MapViewHandle, MapViewProps>(function MapView({ region, markers, displayItems, onRegionChange, onMarkerPress, onLongPress }, ref) {
   const mapRef = useRef<NativeMapView>(null);
+
+  useImperativeHandle(ref, () => ({
+    animateToRegion(targetRegion: Region, duration = 500) {
+      mapRef.current?.animateToRegion(
+        {
+          latitude: targetRegion.latitude,
+          longitude: targetRegion.longitude,
+          latitudeDelta: targetRegion.latitudeDelta,
+          longitudeDelta: targetRegion.longitudeDelta,
+        },
+        duration,
+      );
+    },
+  }));
 
   const handleRegionChangeComplete = useCallback(
     (nativeRegion: NativeRegion) => {
@@ -130,7 +144,7 @@ export default function MapView({ region, markers, displayItems, onRegionChange,
       })}
     </NativeMapView>
   );
-}
+});
 
 const styles = StyleSheet.create({
   map: {
