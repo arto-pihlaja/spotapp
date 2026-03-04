@@ -39,15 +39,18 @@ function snapToSpeed(distance: number): number {
 interface QuickReportSliderProps {
   spotId: string;
   onDone: () => void;
+  onCompassTouchChange?: (touching: boolean) => void;
 }
 
-export function QuickReportSlider({ spotId, onDone }: QuickReportSliderProps) {
+export function QuickReportSlider({ spotId, onDone, onCompassTouchChange }: QuickReportSliderProps) {
   const [waveHeight, setWaveHeight] = useState(1.0);
   const [windSpeed, setWindSpeed] = useState(0);
   const [windAngle, setWindAngle] = useState(0);
   const [showAccessible, setShowAccessible] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const compassCenter = useRef({ x: 0, y: 0 });
+  const touchChangeRef = useRef(onCompassTouchChange);
+  touchChangeRef.current = onCompassTouchChange;
 
   const mutation = useCreateCondition(spotId);
 
@@ -55,12 +58,23 @@ export function QuickReportSlider({ spotId, onDone }: QuickReportSliderProps) {
     PanResponder.create({
       onStartShouldSetPanResponder: () => true,
       onMoveShouldSetPanResponder: () => true,
+      onStartShouldSetPanResponderCapture: () => true,
+      onMoveShouldSetPanResponderCapture: () => true,
       onPanResponderGrant: (evt) => {
+        touchChangeRef.current?.(true);
         handleWindTouch(evt.nativeEvent.locationX, evt.nativeEvent.locationY);
       },
       onPanResponderMove: (evt) => {
         handleWindTouch(evt.nativeEvent.locationX, evt.nativeEvent.locationY);
       },
+      onPanResponderRelease: () => {
+        touchChangeRef.current?.(false);
+      },
+      onPanResponderTerminate: () => {
+        touchChangeRef.current?.(false);
+      },
+      onPanResponderTerminationRequest: () => false,
+      onShouldBlockNativeResponder: () => true,
     }),
   ).current;
 
@@ -202,22 +216,41 @@ export function QuickReportSlider({ spotId, onDone }: QuickReportSliderProps) {
                 );
               })}
 
-              {/* Arrow indicator */}
+              {/* Arrow indicator — shaft + arrowhead pointing from finger toward center */}
               {windSpeed > 0 && (
-                <View
-                  style={[
-                    styles.arrowDot,
-                    {
-                      left: '50%',
-                      top: '50%',
-                      transform: [{ translateX: arrowX - 8 }, { translateY: arrowY - 8 }],
-                    },
-                  ]}
-                />
+                <>
+                  <View
+                    style={[
+                      styles.arrowShaft,
+                      {
+                        height: arrowLen,
+                        left: '50%',
+                        top: '50%',
+                        marginLeft: -1.5,
+                        marginTop: -arrowLen,
+                        transform: [{ rotate: `${windAngle}deg` }],
+                        transformOrigin: 'center bottom',
+                      },
+                    ]}
+                  />
+                  <View
+                    style={[
+                      styles.arrowHead,
+                      {
+                        left: '50%',
+                        top: '50%',
+                        transform: [
+                          { translateX: -6 },
+                          { translateY: -12 },
+                          { rotate: `${windAngle}deg` },
+                        ],
+                        transformOrigin: '6px 12px',
+                      },
+                    ]}
+                  />
+                </>
               )}
 
-              {/* Center dot */}
-              <View style={styles.centerDot} />
             </View>
           </View>
         )}
@@ -385,23 +418,22 @@ const styles = StyleSheet.create({
     width: 16,
     textAlign: 'center',
   },
-  arrowDot: {
+  arrowShaft: {
     position: 'absolute',
-    width: 16,
-    height: 16,
-    borderRadius: 8,
+    width: 3,
     backgroundColor: '#0284C7',
+    borderRadius: 1.5,
   },
-  centerDot: {
+  arrowHead: {
     position: 'absolute',
-    left: '50%',
-    top: '50%',
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: '#999',
-    marginLeft: -4,
-    marginTop: -4,
+    width: 0,
+    height: 0,
+    borderLeftWidth: 6,
+    borderRightWidth: 6,
+    borderTopWidth: 12,
+    borderLeftColor: 'transparent',
+    borderRightColor: 'transparent',
+    borderTopColor: '#0284C7',
   },
   accessibleWind: {
     gap: 12,

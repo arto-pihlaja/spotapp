@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { StyleSheet, View, Text, ActivityIndicator, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
 import { BottomSheet } from '@/components/BottomSheet';
@@ -49,6 +49,7 @@ export function SpotDetailSheet({ spotId, onDismiss }: SpotDetailSheetProps) {
   const [editing, setEditing] = useState(false);
   const [reporting, setReporting] = useState(false);
   const [creatingSession, setCreatingSession] = useState(false);
+  const [compassTouching, setCompassTouching] = useState(false);
   const isAuthenticated = useAuthStore((s) => !!s.accessToken);
 
   // Reset state when spot changes
@@ -83,7 +84,7 @@ export function SpotDetailSheet({ spotId, onDismiss }: SpotDetailSheetProps) {
   useSocketEvent('session:expired', handleSessionUpdate, !!spotId);
 
   return (
-    <BottomSheet visible={!!spotId} onDismiss={onDismiss}>
+    <BottomSheet visible={!!spotId} onDismiss={onDismiss} scrollEnabled={!compassTouching}>
       {isLoading && (
         <View style={styles.centered}>
           <ActivityIndicator size="large" color="#007AFF" />
@@ -128,6 +129,7 @@ export function SpotDetailSheet({ spotId, onDismiss }: SpotDetailSheetProps) {
               <QuickReportSlider
                 spotId={spotId}
                 onDone={() => setReporting(false)}
+                onCompassTouchChange={setCompassTouching}
               />
             ) : (
               <>

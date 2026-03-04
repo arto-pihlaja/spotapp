@@ -11,15 +11,17 @@ import {
 
 const WINDOW_HEIGHT = Dimensions.get('window').height;
 const SNAP_POINTS = [0.3, 0.5, 0.9]; // 30%, 50%, 90% of screen
+const HANDLE_HEIGHT = 28; // paddingVertical 12*2 + handle 4
 
 interface BottomSheetProps {
   visible: boolean;
   onDismiss: () => void;
   initialSnap?: number; // index into SNAP_POINTS, default 1 (50%)
+  scrollEnabled?: boolean;
   children: React.ReactNode;
 }
 
-export function BottomSheet({ visible, onDismiss, initialSnap = 1, children }: BottomSheetProps) {
+export function BottomSheet({ visible, onDismiss, initialSnap = 1, scrollEnabled = true, children }: BottomSheetProps) {
   const translateY = useRef(new Animated.Value(WINDOW_HEIGHT)).current;
   const currentSnap = useRef(initialSnap);
   const overlayOpacity = useRef(new Animated.Value(0)).current;
@@ -126,15 +128,18 @@ export function BottomSheet({ visible, onDismiss, initialSnap = 1, children }: B
           <View style={styles.handle} />
         </View>
 
-        {/* Content */}
-        <ScrollView
-          style={styles.content}
-          contentContainerStyle={styles.contentContainer}
-          showsVerticalScrollIndicator={false}
-          bounces={false}
-        >
-          {children}
-        </ScrollView>
+        {/* Content — height tracks visible sheet area so ScrollView scrolls correctly */}
+        <Animated.View style={{ height: Animated.subtract(WINDOW_HEIGHT - HANDLE_HEIGHT, translateY) }}>
+          <ScrollView
+            style={styles.content}
+            contentContainerStyle={styles.contentContainer}
+            showsVerticalScrollIndicator={false}
+            bounces={false}
+            scrollEnabled={scrollEnabled}
+          >
+            {children}
+          </ScrollView>
+        </Animated.View>
       </Animated.View>
     </View>
   );
@@ -171,6 +176,7 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
+    overflow: 'hidden',
   },
   contentContainer: {
     paddingHorizontal: 20,
