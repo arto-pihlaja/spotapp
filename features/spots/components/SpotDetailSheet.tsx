@@ -108,17 +108,41 @@ export function SpotDetailSheet({ spotId, onDismiss }: SpotDetailSheetProps) {
             {spot.latitude.toFixed(5)}, {spot.longitude.toFixed(5)}
           </Text>
 
-          {/* Wiki */}
+          {/* Sessions */}
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>About</Text>
-            {editing && spotId ? (
-              <WikiEditor
+            <Text style={styles.sectionTitle}>Sessions</Text>
+            {creatingSession && spotId ? (
+              <SessionForm
                 spotId={spotId}
-                initialContent={wiki?.content ?? ''}
-                onDone={() => setEditing(false)}
+                onDone={() => setCreatingSession(false)}
               />
             ) : (
-              <WikiView spotId={spotId} onEdit={() => setEditing(true)} />
+              <>
+                {!isAuthenticated && sessionCount > 0 ? (
+                  <Text style={styles.sessionCount}>
+                    {sessionCount} active {sessionCount === 1 ? 'session' : 'sessions'}
+                  </Text>
+                ) : sessions && sessions.length > 0 ? (
+                  sessions.map((s) => (
+                    <SessionCard
+                      key={s.id}
+                      session={s}
+                      onLeave={s.isOwn ? () => leaveMutation.mutate(s.id) : undefined}
+                      leaveLoading={leaveMutation.isPending}
+                    />
+                  ))
+                ) : (
+                  <Text style={styles.placeholder}>No active sessions</Text>
+                )}
+                {isAuthenticated && !hasOwnSession && (
+                  <Pressable
+                    style={styles.goingButton}
+                    onPress={() => setCreatingSession(true)}
+                  >
+                    <Text style={styles.goingButtonText}>I'm Going</Text>
+                  </Pressable>
+                )}
+              </>
             )}
           </View>
 
@@ -158,41 +182,17 @@ export function SpotDetailSheet({ spotId, onDismiss }: SpotDetailSheetProps) {
             )}
           </View>
 
-          {/* Sessions */}
+          {/* Wiki */}
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Sessions</Text>
-            {creatingSession && spotId ? (
-              <SessionForm
+            <Text style={styles.sectionTitle}>About</Text>
+            {editing && spotId ? (
+              <WikiEditor
                 spotId={spotId}
-                onDone={() => setCreatingSession(false)}
+                initialContent={wiki?.content ?? ''}
+                onDone={() => setEditing(false)}
               />
             ) : (
-              <>
-                {!isAuthenticated && sessionCount > 0 ? (
-                  <Text style={styles.sessionCount}>
-                    {sessionCount} active {sessionCount === 1 ? 'session' : 'sessions'}
-                  </Text>
-                ) : sessions && sessions.length > 0 ? (
-                  sessions.map((s) => (
-                    <SessionCard
-                      key={s.id}
-                      session={s}
-                      onLeave={s.isOwn ? () => leaveMutation.mutate(s.id) : undefined}
-                      leaveLoading={leaveMutation.isPending}
-                    />
-                  ))
-                ) : (
-                  <Text style={styles.placeholder}>No active sessions</Text>
-                )}
-                {isAuthenticated && !hasOwnSession && (
-                  <Pressable
-                    style={styles.goingButton}
-                    onPress={() => setCreatingSession(true)}
-                  >
-                    <Text style={styles.goingButtonText}>I'm Going</Text>
-                  </Pressable>
-                )}
-              </>
+              <WikiView spotId={spotId} onEdit={() => setEditing(true)} />
             )}
           </View>
 

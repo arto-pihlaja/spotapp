@@ -50,7 +50,7 @@ export async function getSessionsBySpot(spotId: string) {
     where: {
       spotId,
       OR: [
-        { expiresAt: null },
+        { expiresAt: null, type: 'PLANNED' },
         { expiresAt: { gt: now } },
       ],
     },
@@ -75,7 +75,10 @@ export async function deleteExpiredSessions(): Promise<{ spotId: string; session
   const expired = await prisma.session.findMany({
     where: {
       type: 'NOW',
-      expiresAt: { lte: now },
+      OR: [
+        { expiresAt: { lte: now } },
+        { expiresAt: null },
+      ],
     },
     select: { id: true, spotId: true },
   });

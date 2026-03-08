@@ -3,7 +3,20 @@ import { deleteExpiredSessions } from '../services/sessions.service.js';
 import { emitSessionExpired } from '../socket/sessionHandlers.js';
 import { logger } from '../utils/logger.js';
 
-export function startSessionExpiryJob(): void {
+export async function startSessionExpiryJob(): Promise<void> {
+  // Run cleanup immediately on startup
+  try {
+    const expired = await deleteExpiredSessions();
+    if (expired.length > 0) {
+      logger.info({ count: expired.length }, 'Startup: cleaned up expired sessions');
+      for (const { spotId, sessionId } of expired) {
+        emitSessionExpired(spotId, sessionId);
+      }
+    }
+  } catch (err) {
+    logger.error({ err }, 'Startup session cleanup failed');
+  }
+
   // Run every 5 minutes
   cron.schedule('*/5 * * * *', async () => {
     try {

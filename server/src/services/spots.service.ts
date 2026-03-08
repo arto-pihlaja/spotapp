@@ -94,7 +94,7 @@ export async function getSpotsByViewport(viewport: Viewport, timeFilter?: TimeFi
                 // Not expired
                 {
                   OR: [
-                    { expiresAt: null },
+                    { expiresAt: null, type: 'PLANNED' },
                     { expiresAt: { gt: new Date() } },
                   ],
                 },
