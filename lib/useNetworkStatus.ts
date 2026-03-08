@@ -10,13 +10,13 @@ export function useNetworkStatus() {
 
     // Set initial state
     NetInfo.fetch().then((state) => {
-      const offline = !state.isConnected;
+      const offline = state.isConnected === false;
       wasOffline = offline;
       useUIStore.getState().setOffline(offline);
     });
 
     const unsubscribe = NetInfo.addEventListener((state) => {
-      const offline = !state.isConnected;
+      const offline = state.isConnected === false;
       useUIStore.getState().setOffline(offline);
 
       // Reconnected — flush queue and refresh data

@@ -19,7 +19,7 @@ export async function createSession({
   const now = new Date();
   const sessionType: SessionType = type === 'now' ? 'NOW' : 'PLANNED';
   const scheduled = type === 'now' ? now : new Date(scheduledAt!);
-  const expires = type === 'now' ? new Date(now.getTime() + 90 * 60 * 1000) : null;
+  const expires = new Date((type === 'now' ? now : scheduled).getTime() + 90 * 60 * 1000);
 
   return prisma.session.create({
     data: {
@@ -49,10 +49,7 @@ export async function getSessionsBySpot(spotId: string) {
   return prisma.session.findMany({
     where: {
       spotId,
-      OR: [
-        { expiresAt: null, type: 'PLANNED' },
-        { expiresAt: { gt: now } },
-      ],
+      expiresAt: { gt: now },
     },
     orderBy: { scheduledAt: 'asc' },
     select: {
@@ -74,11 +71,7 @@ export async function deleteExpiredSessions(): Promise<{ spotId: string; session
 
   const expired = await prisma.session.findMany({
     where: {
-      type: 'NOW',
-      OR: [
-        { expiresAt: { lte: now } },
-        { expiresAt: null },
-      ],
+      expiresAt: { lte: now },
     },
     select: { id: true, spotId: true },
   });

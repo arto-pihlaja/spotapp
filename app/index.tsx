@@ -33,6 +33,14 @@ export default function MapScreen() {
   }, []);
   useSocketEvent('spot:created', handleSpotCreated);
 
+  // Invalidate spots list when session counts change
+  const handleSessionChange = useCallback(() => {
+    queryClient.invalidateQueries({ queryKey: ['spots'] });
+  }, []);
+  useSocketEvent('session:joined', handleSessionChange);
+  useSocketEvent('session:left', handleSessionChange);
+  useSocketEvent('session:expired', handleSessionChange);
+
   const markers: MapMarker[] = useMemo(
     () =>
       spots?.map((spot) => ({

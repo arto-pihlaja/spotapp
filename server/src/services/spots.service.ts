@@ -77,6 +77,7 @@ export async function getSpotsByViewport(viewport: Viewport, timeFilter?: TimeFi
       longitude: true,
       createdAt: true,
       conditionReports: {
+        where: { createdAt: { gte: new Date(Date.now() - 12 * 60 * 60 * 1000) } },
         orderBy: { createdAt: 'desc' },
         take: 1,
         select: {
@@ -92,12 +93,7 @@ export async function getSpotsByViewport(viewport: Viewport, timeFilter?: TimeFi
             where: {
               AND: [
                 // Not expired
-                {
-                  OR: [
-                    { expiresAt: null, type: 'PLANNED' },
-                    { expiresAt: { gt: new Date() } },
-                  ],
-                },
+                { expiresAt: { gt: new Date() } },
                 // Within time window (if specified)
                 ...(timeFilter?.timeFrom
                   ? [{ scheduledAt: { gte: new Date(timeFilter.timeFrom) } }]

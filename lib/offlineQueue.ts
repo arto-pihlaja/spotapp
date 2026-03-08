@@ -30,7 +30,9 @@ export async function getQueue(): Promise<QueuedMutation[]> {
 export async function restoreQueueToUI() {
   const queue = await getQueue();
   const store = useUIStore.getState();
+  const existingIds = new Set(store.pendingActions.map((a) => a.id));
   for (const entry of queue) {
+    if (existingIds.has(entry.id)) continue;
     store.addPendingAction({
       id: entry.id,
       type: entry.type,
@@ -38,6 +40,10 @@ export async function restoreQueueToUI() {
       timestamp: entry.timestamp,
       status: 'pending',
     });
+  }
+  // If online, flush queued items immediately
+  if (!store.isOffline) {
+    flushOfflineQueue();
   }
 }
 
