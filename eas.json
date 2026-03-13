@@ -8,20 +8,20 @@
       "distribution": "internal",
       "env": {
         "APP_VARIANT": "development",
-        "EXPO_PUBLIC_API_BASE_URL": "https://api-dev.spotapp.example.com"
+        "EXPO_PUBLIC_API_BASE_URL": "https://api-dev.spotsapp.example.com"
       }
     },
     "preview": {
       "distribution": "internal",
       "env": {
         "APP_VARIANT": "preview",
-        "EXPO_PUBLIC_API_BASE_URL": "https://api-dev.spotapp.example.com"
+        "EXPO_PUBLIC_API_BASE_URL": "https://api-dev.spotsapp.example.com"
       }
     },
     "production": {
       "env": {
         "APP_VARIANT": "production",
-        "EXPO_PUBLIC_API_BASE_URL": "https://api.spotapp.example.com"
+        "EXPO_PUBLIC_API_BASE_URL": "https://api.spotsapp.example.com"
       }
     }
   },

@@ -1,4 +1,4 @@
-# SpotApp
+# SpotsApp
 
 A collaborative map app for discovering and documenting spots. Users drop pins on a map, attach wiki-style pages, and contribute local knowledge. Built with Expo (React Native) on the frontend and Express on the backend.
 
@@ -55,7 +55,7 @@ npx expo start --web --clear        # opens on http://localhost:8081
 ## Architecture
 
 ```
-spotapp/
+spotsapp/
 ├── app/                  # Expo Router screens & layouts
 ├── features/             # Feature modules (spots, wiki, auth, admin)
 │   └── <feature>/
@@ -89,7 +89,7 @@ npm run validate    # runs frontend typecheck + server typecheck + web build
 
 ## Database
 PostgreSQL has psql. You can connect and explore:
-psql -U postgres -d spotapp                                                       
+psql -U postgres -d spotsapp                                                       
                                                                                   
   Some useful commands once inside:                                                 
                                                                                     

@@ -28,7 +28,7 @@ export const useAuthStore = create<AuthState>()(
         set({ accessToken: null, refreshToken: null, user: null }),
     }),
     {
-      name: 'spotapp-auth',
+      name: 'spotsapp-auth',
       getStorage: () => AsyncStorage,
       partialize: (state) =>
         ({

@@ -26,7 +26,7 @@ export default function Root({ children }: PropsWithChildren) {
           name="apple-mobile-web-app-status-bar-style"
           content="default"
         />
-        <meta name="apple-mobile-web-app-title" content="SpotApp" />
+        <meta name="apple-mobile-web-app-title" content="SpotsApp" />
         <link rel="apple-touch-icon" href="/icon-192x192.png" />
 
         {/* Service worker registration */}

@@ -1,6 +1,6 @@
 {
-  "name": "SpotApp",
-  "short_name": "SpotApp",
+  "name": "SpotsApp",
+  "short_name": "SpotsApp",
   "description": "Map-first coordination for water sports communities",
   "start_url": "/",
   "display": "standalone",

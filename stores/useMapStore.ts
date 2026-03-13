@@ -24,7 +24,7 @@ export const useMapStore = create<MapState>()(
       setMapReady: (ready) => set({ mapReady: ready }),
     }),
     {
-      name: 'spotapp-map',
+      name: 'spotsapp-map',
       getStorage: () => AsyncStorage,
       partialize: (state) => ({ region: state.region } as MapState),
     },

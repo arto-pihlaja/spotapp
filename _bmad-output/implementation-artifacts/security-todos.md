@@ -116,7 +116,7 @@
 ### 10. Frontend persists tokens in AsyncStorage without encryption
 
 - **Location:** `stores/useAuthStore.ts:27-33`
-- **Risk:** Tokens (including 30-day refresh tokens) are stored in plaintext via `AsyncStorage` under the key `spotapp-auth`. On Android this is an unencrypted SQLite database accessible on rooted devices. On web this falls back to `localStorage` — accessible to any XSS.
+- **Risk:** Tokens (including 30-day refresh tokens) are stored in plaintext via `AsyncStorage` under the key `spotsapp-auth`. On Android this is an unencrypted SQLite database accessible on rooted devices. On web this falls back to `localStorage` — accessible to any XSS.
 - **Fix:** Use `expo-secure-store` (Keychain on iOS, EncryptedSharedPreferences on Android) for token storage. On web, consider `httpOnly` cookies instead of localStorage.
 - **Ref:** OWASP A02 — Cryptographic Failures, CWE-312
 

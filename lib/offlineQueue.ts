@@ -3,7 +3,7 @@ import { api, ApiError } from './apiClient';
 import { useUIStore } from '@/stores/useUIStore';
 import { showToast } from '@/components/Toast';
 
-const STORAGE_KEY = 'spotapp-offline-queue';
+const STORAGE_KEY = 'spotsapp-offline-queue';
 const MAX_RETRIES = 5;
 
 export interface QueuedMutation {

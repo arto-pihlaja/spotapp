@@ -13,7 +13,7 @@ export const queryClient = new QueryClient({
   },
 });
 
-const CACHE_KEY = 'spotapp-query-cache';
+const CACHE_KEY = 'spotsapp-query-cache';
 let throttleTimer: ReturnType<typeof setTimeout> | undefined;
 
 export const asyncStoragePersister: Persister = {

@@ -4,27 +4,27 @@ const IS_DEV = process.env.APP_VARIANT === 'development';
 const IS_PREVIEW = process.env.APP_VARIANT === 'preview';
 
 const getAppName = () => {
-  if (IS_DEV) return 'SpotApp (Dev)';
-  if (IS_PREVIEW) return 'SpotApp (QA)';
-  return 'SpotApp';
+  if (IS_DEV) return 'SpotsApp (Dev)';
+  if (IS_PREVIEW) return 'SpotsApp (QA)';
+  return 'SpotsApp';
 };
 
 const getBundleId = () => {
-  if (IS_DEV) return 'com.spotapp.dev';
-  if (IS_PREVIEW) return 'com.spotapp.preview';
-  return 'com.spotapp.app';
+  if (IS_DEV) return 'com.spotsapp.dev';
+  if (IS_PREVIEW) return 'com.spotsapp.preview';
+  return 'com.spotsapp.app';
 };
 
 const getScheme = () => {
-  if (IS_DEV) return 'spotapp-dev';
-  if (IS_PREVIEW) return 'spotapp-preview';
-  return 'spotapp';
+  if (IS_DEV) return 'spotsapp-dev';
+  if (IS_PREVIEW) return 'spotsapp-preview';
+  return 'spotsapp';
 };
 
 export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
   name: getAppName(),
-  slug: 'spotapp',
+  slug: 'spotsapp',
   version: '1.0.0',
   orientation: 'portrait',
   icon: './assets/images/icon.png',

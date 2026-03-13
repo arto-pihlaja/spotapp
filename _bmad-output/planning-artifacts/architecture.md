@@ -5,7 +5,7 @@ workflowType: 'architecture'
 lastStep: 8
 status: 'complete'
 completedAt: '2026-02-21'
-project_name: 'spotapp'
+project_name: 'spotsapp'
 user_name: 'Hemmu'
 date: '2026-02-20'
 ---
@@ -98,7 +98,7 @@ Full-stack TypeScript: Expo (React Native) frontend + Express.js API backend + P
 
 ```bash
 # Frontend
-npx create-expo-app@latest spotapp --template default
+npx create-expo-app@latest spotsapp --template default
 
 # Backend (manual composition)
 mkdir server && cd server
@@ -554,7 +554,7 @@ useUIStore        // bottomSheetState, offlineBanner, toasts
 Monorepo — single git repo, independently deployable. Vercel deploys from root (Expo web), Railway deploys from `server/`.
 
 ```
-spotapp/
+spotsapp/
 ├── .github/workflows/
 │   ├── frontend-ci.yml
 │   └── backend-ci.yml
@@ -974,7 +974,7 @@ Complete file tree for both frontend and backend with every directory and key fi
 **First Implementation Priority:**
 ```bash
 # 1. Initialize Expo project
-npx create-expo-app@latest spotapp --template default
+npx create-expo-app@latest spotsapp --template default
 
 # 2. Initialize backend
 mkdir server && cd server && npm init -y

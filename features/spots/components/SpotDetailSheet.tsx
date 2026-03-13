@@ -192,7 +192,7 @@ export function SpotDetailSheet({ spotId, onDismiss }: SpotDetailSheetProps) {
                     style={styles.reportButton}
                     onPress={() => setReporting(true)}
                   >
-                    <Text style={styles.reportButtonText}>Report Conditions</Text>
+                    <Text style={styles.reportButtonText}>Conditions Changed</Text>
                   </Pressable>
                 )}
               </>
@@ -270,14 +270,16 @@ const styles = StyleSheet.create({
     fontStyle: 'italic',
   },
   reportButton: {
-    backgroundColor: '#0284C7',
+    backgroundColor: 'transparent',
+    borderWidth: 1.5,
+    borderColor: '#0284C7',
     paddingVertical: 10,
     borderRadius: 8,
     alignItems: 'center',
     marginTop: 4,
   },
   reportButtonText: {
-    color: '#fff',
+    color: '#0284C7',
     fontSize: 14,
     fontWeight: '600',
   },

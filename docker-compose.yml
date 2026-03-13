@@ -3,9 +3,9 @@ services:
     image: postgres:16-alpine
     restart: unless-stopped
     environment:
-      POSTGRES_USER: spotapp
-      POSTGRES_PASSWORD: spotapp
-      POSTGRES_DB: spotapp
+      POSTGRES_USER: spotsapp
+      POSTGRES_PASSWORD: spotsapp
+      POSTGRES_DB: spotsapp
     ports:
       - "5432:5432"
     volumes:
@@ -23,7 +23,7 @@ services:
     depends_on:
       - db
     environment:
-      DATABASE_URL: postgresql://spotapp:spotapp@db:5432/spotapp?schema=public
+      DATABASE_URL: postgresql://spotsapp:spotsapp@db:5432/spotsapp?schema=public
       JWT_ACCESS_SECRET: dev-access-secret-change-in-production-32chars
       JWT_REFRESH_SECRET: dev-refresh-secret-change-in-production-32chars
       PORT: 3000

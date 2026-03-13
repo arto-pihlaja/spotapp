@@ -117,7 +117,7 @@ export function ConditionBadge({
                 confirmDisabled && styles.confirmChipTextDisabled,
               ]}
             >
-              {confirmDisabled ? 'Confirmed' : 'Confirm'}
+              {confirmDisabled ? 'Confirmed ✓' : 'Still Accurate'}
             </Text>
           </Pressable>
         )}
@@ -175,16 +175,19 @@ const styles = StyleSheet.create({
     color: '#0284C7',
   },
   confirmChip: {
-    paddingHorizontal: 14,
-    paddingVertical: 6,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
     borderRadius: 16,
     backgroundColor: '#E0F2FE',
+    borderWidth: 1,
+    borderColor: '#0284C7',
   },
   confirmChipDisabled: {
     backgroundColor: '#F1F5F9',
+    borderColor: '#CBD5E1',
   },
   confirmChipText: {
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: '600',
     color: '#0284C7',
   },
