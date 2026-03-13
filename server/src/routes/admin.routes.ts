@@ -3,7 +3,7 @@ import type { Request, Response } from 'express';
 import { z } from 'zod/v4';
 import { requireAuth, requireRole } from '../middleware/authMiddleware.js';
 import { createInvitationCodeSchema, listAuditLogsSchema } from '../schemas/admin.schema.js';
-import { createInvitationCode, listInvitationCodes, getUserProfile, listUsers, blockUser, unblockUser, deleteSpot, revertWiki, listSpots, listAuditLogs } from '../services/admin.service.js';
+import { createInvitationCode, listInvitationCodes, getUserProfile, listUsers, blockUser, unblockUser, resetPassword, deleteSpot, revertWiki, listSpots, listAuditLogs } from '../services/admin.service.js';
 import { emitModerationAction } from '../socket/adminHandlers.js';
 import { getIO } from '../socket/index.js';
 import { prisma } from '../config/prisma.js';
@@ -118,6 +118,26 @@ router.post(
       timestamp: new Date().toISOString(),
     });
 
+    res.json({ data: result });
+  },
+);
+
+// POST /admin/users/:userId/reset-password (admin only)
+router.post(
+  '/admin/users/:userId/reset-password',
+  requireAuth,
+  requireRole('ADMIN'),
+  async (req: Request, res: Response) => {
+    const userId = req.params.userId as string;
+    const target = await prisma.user.findUnique({ where: { id: userId }, select: { id: true, role: true } });
+    if (!target) {
+      throw new AppError(404, 'NOT_FOUND', 'User not found');
+    }
+    if (target.role === 'ADMIN') {
+      throw new AppError(400, 'INVALID_TARGET', 'Cannot reset password for an admin user');
+    }
+
+    const result = await resetPassword(userId, req.user!.userId);
     res.json({ data: result });
   },
 );

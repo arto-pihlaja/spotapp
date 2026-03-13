@@ -7,15 +7,16 @@ export default function OfflineBanner() {
   const isOffline = useUIStore((s) => s.isOffline);
   const pendingCount = useUIStore((s) => s.pendingActions.length);
   const insets = useSafeAreaInsets();
-  const translateY = useRef(new Animated.Value(-80)).current;
+  const hideOffset = -(insets.top + 80);
+  const translateY = useRef(new Animated.Value(hideOffset)).current;
 
   useEffect(() => {
     Animated.timing(translateY, {
-      toValue: isOffline ? 0 : -80,
+      toValue: isOffline ? 0 : hideOffset,
       duration: 300,
       useNativeDriver: true,
     }).start();
-  }, [isOffline, translateY]);
+  }, [isOffline, hideOffset, translateY]);
 
   return (
     <Animated.View

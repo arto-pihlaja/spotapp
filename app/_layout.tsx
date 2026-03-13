@@ -35,11 +35,12 @@ export default function RootLayout() {
       <SocketProvider>
         <OfflineBanner />
         <Stack>
-          <Stack.Screen name="index" options={{ headerShown: false }} />
+          <Stack.Screen name="index" options={{ headerShown: false, headerBackTitle: 'Back' }} />
           <Stack.Screen name="(auth)" options={{ headerShown: false }} />
           <Stack.Screen name="(admin)" options={{ title: 'Admin' }} />
           <Stack.Screen name="spot/[spotId]" options={{ title: 'Spot Details' }} />
           <Stack.Screen name="profile/[userId]" options={{ title: 'Profile' }} />
+          <Stack.Screen name="settings" options={{ title: 'Settings' }} />
         </Stack>
         <Toast />
         <StatusBar style="auto" />

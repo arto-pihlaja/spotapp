@@ -7,6 +7,8 @@ import {
   Pressable,
   StyleSheet,
   ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
 import { useCreateSpot } from '../hooks/useCreateSpot';
 
@@ -56,8 +58,9 @@ export function CreateSpotModal({ visible, coordinate, onClose }: CreateSpotModa
       animationType="slide"
       onRequestClose={onClose}
     >
-      <View style={styles.overlay}>
-        <View style={styles.sheet}>
+      <KeyboardAvoidingView style={styles.avoiding} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+        <Pressable style={styles.overlay} onPress={onClose}>
+          <Pressable style={styles.sheet} onPress={(e) => e.stopPropagation()}>
           <Text style={styles.title}>Create Spot</Text>
 
           {coordinate && (
@@ -107,24 +110,27 @@ export function CreateSpotModal({ visible, coordinate, onClose }: CreateSpotModa
               )}
             </Pressable>
           </View>
-        </View>
-      </View>
+          </Pressable>
+        </Pressable>
+      </KeyboardAvoidingView>
     </Modal>
   );
 }
 
 const styles = StyleSheet.create({
+  avoiding: {
+    flex: 1,
+  },
   overlay: {
     flex: 1,
-    justifyContent: 'flex-end',
+    justifyContent: 'center',
     backgroundColor: 'rgba(0,0,0,0.4)',
+    padding: 24,
   },
   sheet: {
     backgroundColor: '#fff',
-    borderTopLeftRadius: 16,
-    borderTopRightRadius: 16,
+    borderRadius: 16,
     padding: 24,
-    paddingBottom: 36,
   },
   title: {
     fontSize: 20,

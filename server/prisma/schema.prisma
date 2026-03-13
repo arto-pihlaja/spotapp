@@ -29,26 +29,31 @@ enum AuditActionType {
   USER_UNBLOCKED
   SPOT_DELETED
   WIKI_REVERTED
+  PASSWORD_RESET
 }
 
 model User {
-  id           String   @id @default(uuid())
-  username     String   @unique
-  passwordHash String   @map("password_hash")
-  photoUrl     String?  @map("photo_url")
-  externalLink String?  @map("external_link")
-  role         UserRole @default(USER)
-  isBlocked    Boolean  @default(false) @map("is_blocked")
-  createdAt    DateTime @default(now()) @map("created_at")
-  updatedAt    DateTime @updatedAt @map("updated_at")
+  id              String    @id @default(uuid())
+  username        String    @unique
+  passwordHash    String    @map("password_hash")
+  email           String?   @unique @map("email")
+  emailVerifiedAt DateTime? @map("email_verified_at")
+  photoUrl        String?   @map("photo_url")
+  externalLink    String?   @map("external_link")
+  role            UserRole  @default(USER)
+  isBlocked       Boolean   @default(false) @map("is_blocked")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
 
-  invitationCodes        InvitationCode[]
-  spots                  Spot[]
-  wikiContents           WikiContent[]
-  sessions               Session[]
-  conditionReports       ConditionReport[]
-  conditionConfirmations ConditionConfirmation[]
-  auditLogs              AuditLog[]
+  invitationCodes         InvitationCode[]
+  spots                   Spot[]
+  wikiContents            WikiContent[]
+  sessions                Session[]
+  conditionReports        ConditionReport[]
+  conditionConfirmations  ConditionConfirmation[]
+  auditLogs               AuditLog[]
+  passwordResetTokens     PasswordResetToken[]
+  emailVerificationTokens EmailVerificationToken[]
 
   @@map("users")
 }
@@ -152,4 +157,31 @@ model AuditLog {
   admin User @relation(fields: [adminId], references: [id])
 
   @@map("audit_logs")
+}
+
+model PasswordResetToken {
+  id        String    @id @default(uuid())
+  userId    String    @map("user_id")
+  tokenHash String    @map("token_hash")
+  expiresAt DateTime  @map("expires_at")
+  usedAt    DateTime? @map("used_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@map("password_reset_tokens")
+}
+
+model EmailVerificationToken {
+  id        String    @id @default(uuid())
+  userId    String    @map("user_id")
+  email     String
+  tokenHash String    @map("token_hash")
+  expiresAt DateTime  @map("expires_at")
+  usedAt    DateTime? @map("used_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@map("email_verification_tokens")
 }

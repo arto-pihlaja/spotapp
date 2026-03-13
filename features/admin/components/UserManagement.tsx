@@ -3,6 +3,7 @@ import { ActivityIndicator, Alert, FlatList, Platform, Pressable, StyleSheet, Te
 import { useUsers } from '../hooks/useUsers';
 import { useBlockUser } from '../hooks/useBlockUser';
 import { useUnblockUser } from '../hooks/useUnblockUser';
+import { useResetPassword } from '../hooks/useResetPassword';
 import type { UserForModeration } from '../types';
 
 function confirmAction(title: string, message: string, onConfirm: () => void) {
@@ -21,7 +22,8 @@ function confirmAction(title: string, message: string, onConfirm: () => void) {
 function UserRow({ user }: { user: UserForModeration }) {
   const blockMutation = useBlockUser();
   const unblockMutation = useUnblockUser();
-  const isBusy = blockMutation.isPending || unblockMutation.isPending;
+  const resetPasswordMutation = useResetPassword();
+  const isBusy = blockMutation.isPending || unblockMutation.isPending || resetPasswordMutation.isPending;
 
   const handleBlock = () => {
     confirmAction(
@@ -35,6 +37,14 @@ function UserRow({ user }: { user: UserForModeration }) {
     unblockMutation.mutate(user.id);
   };
 
+  const handleResetPassword = () => {
+    confirmAction(
+      `Reset password for ${user.username}?`,
+      'A new temporary password will be generated. Share it with the user so they can log in.',
+      () => resetPasswordMutation.mutate(user.id),
+    );
+  };
+
   return (
     <View style={styles.row}>
       <View style={styles.userInfo}>
@@ -46,17 +56,28 @@ function UserRow({ user }: { user: UserForModeration }) {
       <Text style={styles.stats}>
         {user.stats.sessionCount} sessions, {user.stats.conditionReportCount} reports
       </Text>
-      <Pressable
-        style={[styles.button, user.isBlocked ? styles.unblockButton : styles.blockButton]}
-        onPress={user.isBlocked ? handleUnblock : handleBlock}
-        disabled={isBusy}
-      >
-        {isBusy ? (
-          <ActivityIndicator size="small" color="#FFFFFF" />
-        ) : (
-          <Text style={styles.buttonText}>{user.isBlocked ? 'Unblock' : 'Block'}</Text>
+      <View style={styles.actions}>
+        <Pressable
+          style={[styles.button, user.isBlocked ? styles.unblockButton : styles.blockButton]}
+          onPress={user.isBlocked ? handleUnblock : handleBlock}
+          disabled={isBusy}
+        >
+          {isBusy ? (
+            <ActivityIndicator size="small" color="#FFFFFF" />
+          ) : (
+            <Text style={styles.buttonText}>{user.isBlocked ? 'Unblock' : 'Block'}</Text>
+          )}
+        </Pressable>
+        {!user.isBlocked && (
+          <Pressable
+            style={[styles.button, styles.resetButton]}
+            onPress={handleResetPassword}
+            disabled={isBusy}
+          >
+            <Text style={styles.buttonText}>Reset Password</Text>
+          </Pressable>
         )}
-      </Pressable>
+      </View>
     </View>
   );
 }
@@ -140,8 +161,11 @@ const styles = StyleSheet.create({
     color: '#6B7280',
     marginBottom: 12,
   },
+  actions: {
+    flexDirection: 'row',
+    gap: 8,
+  },
   button: {
-    alignSelf: 'flex-start',
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 6,
@@ -153,6 +177,9 @@ const styles = StyleSheet.create({
   },
   unblockButton: {
     backgroundColor: '#3B82F6',
+  },
+  resetButton: {
+    backgroundColor: '#F59E0B',
   },
   buttonText: {
     color: '#FFFFFF',

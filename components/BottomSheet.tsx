@@ -1,4 +1,4 @@
-import { useRef, useEffect, useCallback } from 'react';
+import { useRef, useEffect, useCallback, forwardRef, useImperativeHandle } from 'react';
 import {
   StyleSheet,
   View,
@@ -10,21 +10,28 @@ import {
 } from 'react-native';
 
 const WINDOW_HEIGHT = Dimensions.get('window').height;
-const SNAP_POINTS = [0.3, 0.5, 0.9]; // 30%, 50%, 90% of screen
+const SNAP_POINTS = [0.3, 0.5, 0.85]; // 30%, 50%, 85% of screen
 const HANDLE_HEIGHT = 28; // paddingVertical 12*2 + handle 4
+
+export interface BottomSheetRef {
+  animateTo: (snapIndex: number) => void;
+}
 
 interface BottomSheetProps {
   visible: boolean;
   onDismiss: () => void;
   initialSnap?: number; // index into SNAP_POINTS, default 1 (50%)
   scrollEnabled?: boolean;
+  onSnapChange?: (snapIndex: number) => void;
   children: React.ReactNode;
 }
 
-export function BottomSheet({ visible, onDismiss, initialSnap = 1, scrollEnabled = true, children }: BottomSheetProps) {
+export const BottomSheet = forwardRef<BottomSheetRef, BottomSheetProps>(function BottomSheet({ visible, onDismiss, initialSnap = 1, scrollEnabled = true, onSnapChange, children }, ref) {
   const translateY = useRef(new Animated.Value(WINDOW_HEIGHT)).current;
   const currentSnap = useRef(initialSnap);
   const overlayOpacity = useRef(new Animated.Value(0)).current;
+  const onSnapChangeRef = useRef(onSnapChange);
+  onSnapChangeRef.current = onSnapChange;
 
   const getYForSnap = useCallback(
     (snapIndex: number) => WINDOW_HEIGHT * (1 - SNAP_POINTS[snapIndex]),
@@ -40,9 +47,12 @@ export function BottomSheet({ visible, onDismiss, initialSnap = 1, scrollEnabled
         tension: 80,
         friction: 12,
       }).start();
+      onSnapChangeRef.current?.(snapIndex);
     },
     [translateY, getYForSnap],
   );
+
+  useImperativeHandle(ref, () => ({ animateTo }), [animateTo]);
 
   const dismiss = useCallback(() => {
     Animated.timing(translateY, {
@@ -143,7 +153,7 @@ export function BottomSheet({ visible, onDismiss, initialSnap = 1, scrollEnabled
       </Animated.View>
     </View>
   );
-}
+});
 
 const styles = StyleSheet.create({
   overlay: {

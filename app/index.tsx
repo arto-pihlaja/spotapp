@@ -119,12 +119,11 @@ export default function MapScreen() {
         onLongPress={handleLongPress}
       />
 
-      {/* Time slider */}
-      <View style={styles.timeSliderContainer}>
+      {/* Top bar: TimeSlider + AccountMenu in a flex-wrap row */}
+      <View style={styles.topBar}>
         <TimeSlider onChange={setTimeFilter} />
+        <AccountMenu />
       </View>
-
-      <AccountMenu />
 
       {/* Find Me FAB */}
       <Pressable
@@ -154,11 +153,16 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  timeSliderContainer: {
+  topBar: {
     position: 'absolute',
     top: 48,
+    left: 16,
     right: 16,
-    zIndex: 10,
+    zIndex: 20,
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    alignItems: 'flex-start',
   },
   fab: {
     position: 'absolute',

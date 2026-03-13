@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { StyleSheet, View, Text, ActivityIndicator, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
-import { BottomSheet } from '@/components/BottomSheet';
+import { BottomSheet, BottomSheetRef } from '@/components/BottomSheet';
 import { useSpot } from '../hooks/useSpot';
 import { WikiView } from '@/features/wiki/components/WikiView';
 import { WikiEditor } from '@/features/wiki/components/WikiEditor';
@@ -51,6 +51,7 @@ export function SpotDetailSheet({ spotId, onDismiss }: SpotDetailSheetProps) {
   const [creatingSession, setCreatingSession] = useState(false);
   const [compassTouching, setCompassTouching] = useState(false);
   const isAuthenticated = useAuthStore((s) => !!s.accessToken);
+  const sheetRef = useRef<BottomSheetRef>(null);
 
   // Reset state when spot changes
   useEffect(() => {
@@ -58,6 +59,22 @@ export function SpotDetailSheet({ spotId, onDismiss }: SpotDetailSheetProps) {
     setReporting(false);
     setCreatingSession(false);
   }, [spotId]);
+
+  // Expand sheet when reporting, snap back when done
+  useEffect(() => {
+    if (reporting) {
+      sheetRef.current?.animateTo(2);
+    } else {
+      sheetRef.current?.animateTo(1);
+    }
+  }, [reporting]);
+
+  // Exit reporting if user drags sheet below 90%
+  const handleSnapChange = useCallback((snapIndex: number) => {
+    if (snapIndex < 2 && reporting) {
+      setReporting(false);
+    }
+  }, [reporting]);
 
   // Join/leave spot room for real-time updates
   useSocketRoom('spot', spotId);
@@ -84,7 +101,7 @@ export function SpotDetailSheet({ spotId, onDismiss }: SpotDetailSheetProps) {
   useSocketEvent('session:expired', handleSessionUpdate, !!spotId);
 
   return (
-    <BottomSheet visible={!!spotId} onDismiss={onDismiss} scrollEnabled={!compassTouching}>
+    <BottomSheet ref={sheetRef} visible={!!spotId} onDismiss={onDismiss} scrollEnabled={!compassTouching} onSnapChange={handleSnapChange}>
       {isLoading && (
         <View style={styles.centered}>
           <ActivityIndicator size="large" color="#007AFF" />

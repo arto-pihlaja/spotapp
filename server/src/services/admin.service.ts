@@ -1,5 +1,6 @@
 import crypto from 'node:crypto';
 import { prisma } from '../config/prisma.js';
+import { hashPassword } from '../utils/password.js';
 
 export async function createInvitationCode(adminId: string, maxUses: number, expiresAt?: string) {
   const code = crypto.randomBytes(8).toString('base64url').toUpperCase();
@@ -229,6 +230,39 @@ export async function listAuditLogs(options: { page?: number; limit?: number; ac
     })),
     meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
   };
+}
+
+export async function resetPassword(userId: string, adminId: string) {
+  return prisma.$transaction(async (tx) => {
+    const user = await tx.user.findUnique({
+      where: { id: userId },
+      select: { id: true, username: true, role: true },
+    });
+
+    if (!user) return null;
+    if (user.role === 'ADMIN') {
+      throw new Error('Cannot reset password for an admin user');
+    }
+
+    const temporaryPassword = crypto.randomBytes(9).toString('base64url');
+    const passwordHash = await hashPassword(temporaryPassword);
+
+    await tx.user.update({
+      where: { id: userId },
+      data: { passwordHash },
+    });
+
+    await tx.auditLog.create({
+      data: {
+        action: 'PASSWORD_RESET',
+        targetType: 'USER',
+        targetId: userId,
+        adminId,
+      },
+    });
+
+    return { userId: user.id, username: user.username, temporaryPassword };
+  });
 }
 
 export async function getUserProfile(userId: string) {

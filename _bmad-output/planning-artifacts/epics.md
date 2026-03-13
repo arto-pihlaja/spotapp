@@ -43,6 +43,8 @@ Implementation guide for SpotApp MVP. Each epic delivers standalone user value a
 | FR-USER-05 | 2 | Ghost profiles |
 | FR-USER-06 | 7 | User blocking |
 | FR-USER-07 | 7 | User unblocking |
+| FR-USER-08 | 2 | Self-service password reset via email |
+| FR-USER-09 | 2 | Optional email with verification |
 | FR-MOD-01 | 7 | Wiki content removal |
 | FR-MOD-02 | 7 | Moderation audit trail |
 
@@ -51,7 +53,7 @@ Implementation guide for SpotApp MVP. Each epic delivers standalone user value a
 | Epic | Title | Stories | FRs |
 |------|-------|---------|-----|
 | 1 | Project Foundation & Anonymous Map Browsing | 4 | FR-MAP-01, FR-MAP-04, FR-USER-01 (partial) |
-| 2 | User Authentication & Profiles | 5 | FR-USER-02, FR-USER-03, FR-USER-04, FR-USER-05 |
+| 2 | User Authentication & Profiles | 7 | FR-USER-02, FR-USER-03, FR-USER-04, FR-USER-05, FR-USER-08, FR-USER-09 |
 | 3 | Spots & Community Knowledge | 4 | FR-SPOT-01, FR-SPOT-02, FR-SPOT-03 |
 | 4 | Condition Reporting & Real-Time | 4 | FR-COND-01 through FR-COND-06 |
 | 5 | Session Planning & Coordination | 4 | FR-SESSION-01 through FR-SESSION-07 |
@@ -234,7 +236,12 @@ So that I can unlock contribution features and see who's at each spot.
 - Token payload: `{ userId, role }` where role is 'user' by default
 - Invitation code: decrement `currentUses`, validate `expiresAt` and `maxUses`
 - Seed 3-5 test invitation codes in `seed.ts`
-- Frontend: `features/auth/components/RegisterForm.tsx` with honeypot hidden field, JS challenge token
+- Frontend screen: `app/(auth)/register.tsx` — username, password, confirm password, invitation code fields
+- Hook: `features/auth/hooks/useRegister.ts` — mutation following `useLogin.ts` pattern
+- API: `features/auth/api/auth.ts` — `registerUser()` function
+- Hidden anti-bot fields: `_hp` (honeypot, hidden input), `_ts` (timestamp, set on mount)
+- Client-side validation: username 3-30 chars alphanumeric+hyphens/underscores, password min 8, passwords match
+- Privacy hint below username: "Your handle is publicly visible. Avoid using your real name."
 - Zustand: `stores/useAuthStore.ts` — user, tokens, isAuthenticated, role
 
 ### Story 2.2: User Login and Session Persistence
@@ -351,6 +358,98 @@ So that I can control who joins the community.
 - Code generation: `crypto.randomBytes` for URL-safe codes
 - Frontend: `features/admin/components/InvitationCodes.tsx`
 - Screen: `app/(admin)/moderation.tsx` — redirect if not admin
+
+### Story 2.6: Self-Service Password Reset via Email
+
+As a registered user who forgot my password,
+I want to reset it via a link sent to my verified email,
+So that I can regain access without contacting an admin.
+
+**Acceptance Criteria:**
+
+**Given** I click "Forgot password?" on the login screen
+**When** the forgot password screen loads
+**Then** I see an email input and submit button
+
+**Given** I submit a valid email address
+**When** the request completes
+**Then** I always see "If that email is registered, you'll receive a reset link." (prevents email enumeration)
+
+**Given** a reset email is sent
+**When** I click the reset link within 1 hour
+**Then** I'm taken to a form where I can set a new password (min 8 chars, confirm required)
+
+**Given** I submit a valid new password via the reset form
+**When** the reset completes
+**Then** the token is invalidated (single-use), my password is updated, and I'm directed to log in
+
+**Given** a reset token is expired (>1 hour) or already used
+**When** I try to use it
+**Then** I get a clear error message
+
+**Given** 3 forgot-password requests from the same IP in 1 minute
+**When** the 4th attempt arrives
+**Then** it is rate-limited with 429
+
+**Implementation context:**
+- Reset token: `crypto.randomBytes(32)`, SHA-256 hashed in DB (not JWT — allows invalidation/single-use)
+- Reset link: `{APP_URL}/reset-password?token=xxx` (Expo Router web screen)
+- Email provider: Resend (free tier 100/day); falls back to console logging if no API key
+- Backend routes: POST `/api/v1/auth/forgot-password` (rate limit 3/min), POST `/api/v1/auth/reset-password` (rate limit 5/min)
+- Services: `server/src/services/passwordReset.service.ts`, `server/src/services/email.service.ts`
+- Schemas: `server/src/schemas/passwordReset.schema.ts`
+- Frontend screens: `app/(auth)/forgot-password.tsx`, `app/(auth)/reset-password.tsx`
+- Frontend hooks: `features/auth/hooks/usePasswordReset.ts` — `useForgotPassword()`, `useResetPassword()`
+- Login screen updated with "Forgot password?" link
+- Prisma model: `PasswordResetToken` (id, userId, tokenHash, expiresAt, usedAt, createdAt)
+
+### Story 2.7: Email Management & Verification
+
+As a registered user,
+I want to add and verify an email address in my settings,
+So that I can use self-service password reset and receive account notifications.
+
+**Acceptance Criteria:**
+
+**Given** I'm authenticated and on the settings screen
+**When** no email is set
+**Then** I see "No email set" with a "Set Email" button
+
+**Given** I enter a valid email and tap "Save & Verify"
+**When** the email is submitted
+**Then** the email is saved (unverified), a verification link is sent, and I see "Pending verification"
+
+**Given** I receive a verification email
+**When** I click the link within 24 hours
+**Then** my email is marked as verified and the settings screen reflects this
+
+**Given** a verification token is expired (>24 hours) or already used
+**When** I click it
+**Then** I see a clear error message with option to resend
+
+**Given** another user already has the email I'm trying to set
+**When** I submit it
+**Then** I get a 409 error "This email is already in use"
+
+**Given** I already have a verified email
+**When** I update to a new email
+**Then** the old verification is cleared, a new verification email is sent
+
+**Given** email is not set at registration
+**When** I register
+**Then** registration works without email (email added later in settings)
+
+**Implementation context:**
+- Email at registration: No. Email added later in settings to keep registration simple.
+- Email field on User model: optional, unique, with `emailVerifiedAt` timestamp
+- Verification token: same random bytes + SHA-256 hash pattern as password reset, 24h expiry
+- Backend service: `server/src/services/email-management.service.ts` — `setEmail()`, `verifyEmail()`
+- Backend routes in `server/src/routes/profile.routes.ts`: GET `/api/v1/users/me`, POST `/api/v1/users/me/email`, POST `/api/v1/auth/verify-email`
+- Frontend screen: `app/settings.tsx` — email field, verification status, set/update/resend buttons
+- Frontend hook: `useSetEmail()`, `useVerifyEmail()`, `useMe()` in `features/auth/hooks/usePasswordReset.ts`
+- Verify email screen: `app/(auth)/verify-email.tsx` — reads token from URL, auto-verifies on mount
+- Prisma model: `EmailVerificationToken` (id, userId, email, tokenHash, expiresAt, usedAt, createdAt)
+- GDPR: email for account recovery uses "contract performance" as lawful basis, not consent
 
 ---
 
@@ -989,7 +1088,7 @@ NFRs are addressed across stories rather than in dedicated epics. Key mappings:
 | Performance (PERF-01 to 05) | Story 1.3 (map <3s), Story 1.2 (API <200ms), Story 6.2 (server cache) |
 | Scalability (SCALE-01 to 04) | Story 1.2 (viewport queries), Story 4.1 (Socket.io rooms), Story 6.1 (clustering) |
 | Availability (AVAIL-01 to 04) | Story 5.3 (auto-expiry), Story 6.3 (offline), Story 6.4 (PWA) |
-| Security (SEC-01 to 07) | Story 2.1 (bcrypt, anti-bot), Story 2.2 (JWT), Story 2.5 (invitation codes) |
+| Security (SEC-01 to 07) | Story 2.1 (bcrypt, anti-bot), Story 2.2 (JWT), Story 2.5 (invitation codes), Story 2.6 (hashed tokens, anti-enumeration, rate limiting), Story 2.7 (email verification) |
 | Usability (USE-01 to 05) | Story 3.2 (bottom sheet), Story 4.2 (report <15s), Story 6.4 (PWA) |
 | Maintainability (MAINT-01 to 04) | Story 1.1 (project structure), Story 1.2 (API-first, OpenAPI) |
 | Data Retention (DATA-01 to 04) | Story 5.3 (session cleanup), Story 3.4 (wiki no versioning) |

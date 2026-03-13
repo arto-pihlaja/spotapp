@@ -12,6 +12,8 @@ import adminRoutes from './routes/admin.routes.js';
 import wikiRoutes from './routes/wiki.routes.js';
 import conditionsRoutes from './routes/conditions.routes.js';
 import sessionsRoutes from './routes/sessions.routes.js';
+import passwordResetRoutes from './routes/passwordReset.routes.js';
+import profileRoutes from './routes/profile.routes.js';
 
 const app = express();
 
@@ -28,6 +30,8 @@ app.use('/api/v1', adminRoutes);
 app.use('/api/v1', wikiRoutes);
 app.use('/api/v1', conditionsRoutes);
 app.use('/api/v1', sessionsRoutes);
+app.use('/api/v1', passwordResetRoutes);
+app.use('/api/v1', profileRoutes);
 
 // Error handler
 app.use(errorHandler);

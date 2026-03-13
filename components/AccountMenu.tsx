@@ -37,12 +37,17 @@ export function AccountMenu() {
     }
   };
 
+  const handleSettings = () => {
+    setMenuOpen(false);
+    router.push('/settings');
+  };
+
   return (
     <>
-      {/* Full-screen backdrop rendered as sibling so it covers the parent container */}
+      {/* Full-screen backdrop — large offsets to extend beyond the topBar container */}
       {menuOpen && (
         <Pressable
-          style={StyleSheet.absoluteFill}
+          style={styles.backdrop}
           onPress={() => setMenuOpen(false)}
         />
       )}
@@ -65,6 +70,10 @@ export function AccountMenu() {
               <Text style={styles.menuText}>Profile</Text>
             </Pressable>
             <View style={styles.separator} />
+            <Pressable style={styles.menuItem} onPress={handleSettings}>
+              <Text style={styles.menuText}>Settings</Text>
+            </Pressable>
+            <View style={styles.separator} />
             <Pressable style={styles.menuItem} onPress={handleLogout}>
               <Text style={[styles.menuText, styles.logoutText]}>Log out</Text>
             </Pressable>
@@ -76,11 +85,17 @@ export function AccountMenu() {
 }
 
 const styles = StyleSheet.create({
-  wrapper: {
+  backdrop: {
     position: 'absolute',
-    top: 48,
-    left: 16,
+    top: -200,
+    left: -200,
+    right: -2000,
+    bottom: -2000,
+    zIndex: 19,
+  },
+  wrapper: {
     zIndex: 20,
+    marginLeft: 'auto',
   },
   accountButton: {
     backgroundColor: '#fff',

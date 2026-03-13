@@ -1,8 +1,13 @@
 import { api, BASE_URL } from '@/lib/apiClient';
-import type { LoginResponse } from '../types';
+import type { LoginResponse, RegisterInput } from '../types';
 
 export async function loginUser(input: { username: string; password: string }): Promise<LoginResponse> {
   const res = await api.post<LoginResponse>('/auth/login', input);
+  return res.data;
+}
+
+export async function registerUser(input: RegisterInput): Promise<LoginResponse> {
+  const res = await api.post<LoginResponse>('/auth/register', input);
   return res.data;
 }
 

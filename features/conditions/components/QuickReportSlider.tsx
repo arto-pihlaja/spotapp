@@ -197,6 +197,7 @@ export function QuickReportSlider({ spotId, onDone, onCompassTouchChange }: Quic
               {/* Cardinal labels */}
               {CARDINAL_DIRECTIONS.map((dir) => {
                 const a = (CARDINAL_ANGLES[dir] * Math.PI) / 180;
+                const center = COMPASS_RADIUS + 24;
                 const lx = Math.sin(a) * (COMPASS_RADIUS + 16);
                 const ly = -Math.cos(a) * (COMPASS_RADIUS + 16);
                 return (
@@ -205,9 +206,8 @@ export function QuickReportSlider({ spotId, onDone, onCompassTouchChange }: Quic
                     style={[
                       styles.compassLabel,
                       {
-                        left: '50%',
-                        top: '50%',
-                        transform: [{ translateX: lx - 8 }, { translateY: ly - 8 }],
+                        left: center + lx - 8,
+                        top: center + ly - 8,
                       },
                     ]}
                   >

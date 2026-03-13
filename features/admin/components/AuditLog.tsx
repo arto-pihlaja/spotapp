@@ -8,6 +8,7 @@ const ACTION_LABELS: Record<AuditAction, { label: string; icon: string; color: s
   USER_UNBLOCKED: { label: 'User Unblocked', icon: '\u{2705}', color: '#10B981' },
   SPOT_DELETED: { label: 'Spot Deleted', icon: '\u{1F5D1}', color: '#F97316' },
   WIKI_REVERTED: { label: 'Wiki Reverted', icon: '\u{1F4DD}', color: '#8B5CF6' },
+  PASSWORD_RESET: { label: 'Password Reset', icon: '\u{1F511}', color: '#F59E0B' },
 };
 
 const FILTER_OPTIONS: { label: string; value: AuditAction | undefined }[] = [
@@ -16,6 +17,7 @@ const FILTER_OPTIONS: { label: string; value: AuditAction | undefined }[] = [
   { label: 'Unblocked', value: 'USER_UNBLOCKED' },
   { label: 'Spot Del.', value: 'SPOT_DELETED' },
   { label: 'Wiki Rev.', value: 'WIKI_REVERTED' },
+  { label: 'Pwd Reset', value: 'PASSWORD_RESET' },
 ];
 
 function formatTimeAgo(dateStr: string): string {

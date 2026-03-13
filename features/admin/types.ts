@@ -40,7 +40,13 @@ export interface RevertWikiResponse {
   updatedAt: string;
 }
 
-export type AuditAction = 'USER_BLOCKED' | 'USER_UNBLOCKED' | 'SPOT_DELETED' | 'WIKI_REVERTED';
+export interface ResetPasswordResponse {
+  userId: string;
+  username: string;
+  temporaryPassword: string;
+}
+
+export type AuditAction = 'USER_BLOCKED' | 'USER_UNBLOCKED' | 'SPOT_DELETED' | 'WIKI_REVERTED' | 'PASSWORD_RESET';
 
 export interface AuditLogEntry {
   id: string;

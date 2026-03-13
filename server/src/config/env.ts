@@ -8,6 +8,9 @@ const envSchema = z.object({
   PORT: z.coerce.number().default(3000),
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
   CORS_ORIGIN: z.string().default('http://localhost:8081'),
+  RESEND_API_KEY: z.string().optional(),
+  APP_URL: z.string().default('http://localhost:8081'),
+  EMAIL_FROM: z.string().default('SpotApp <noreply@yourdomain.com>'),
 });
 
 export type Env = z.infer<typeof envSchema>;

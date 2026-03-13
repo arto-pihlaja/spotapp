@@ -1,5 +1,5 @@
 import { api } from '@/lib/apiClient';
-import type { UserForModeration, BlockUserResponse, SpotForModeration, DeleteSpotResponse, RevertWikiResponse, AuditLogEntry, AuditLogMeta, AuditAction, InvitationCode, CreateInvitationCodeInput } from '../types';
+import type { UserForModeration, BlockUserResponse, ResetPasswordResponse, SpotForModeration, DeleteSpotResponse, RevertWikiResponse, AuditLogEntry, AuditLogMeta, AuditAction, InvitationCode, CreateInvitationCodeInput } from '../types';
 
 export function fetchUsers() {
   return api.get<UserForModeration[]>('/admin/users').then((r) => r.data);
@@ -11,6 +11,10 @@ export function blockUser(userId: string) {
 
 export function unblockUser(userId: string) {
   return api.post<BlockUserResponse>(`/admin/users/${userId}/unblock`, {}).then((r) => r.data);
+}
+
+export function resetPassword(userId: string) {
+  return api.post<ResetPasswordResponse>(`/admin/users/${userId}/reset-password`, {}).then((r) => r.data);
 }
 
 export function fetchSpots() {
