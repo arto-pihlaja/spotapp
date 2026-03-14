@@ -165,32 +165,60 @@ export default forwardRef<MapViewHandle, MapViewProps>(function MapView({ region
 
       const canvas = map.getCanvas();
 
-      canvas.addEventListener('mousedown', (e: MouseEvent) => {
-        startX = e.offsetX;
-        startY = e.offsetY;
+      const startLongPress = (x: number, y: number) => {
+        startX = x;
+        startY = y;
         lpTimer = setTimeout(() => {
           const cb = onLongPressRef.current;
           if (!cb) return;
           const lngLat = map.unproject([startX, startY]);
           cb({ latitude: lngLat.lat, longitude: lngLat.lng });
         }, 500);
-      });
+      };
 
-      canvas.addEventListener('mousemove', (e: MouseEvent) => {
+      const moveLongPress = (x: number, y: number) => {
         if (!lpTimer) return;
-        const dx = e.offsetX - startX;
-        const dy = e.offsetY - startY;
+        const dx = x - startX;
+        const dy = y - startY;
         if (dx * dx + dy * dy > 25) {
           clearTimeout(lpTimer);
           lpTimer = null;
         }
-      });
+      };
 
-      canvas.addEventListener('mouseup', () => {
+      const cancelLongPress = () => {
         if (lpTimer) {
           clearTimeout(lpTimer);
           lpTimer = null;
         }
+      };
+
+      // Mouse events (desktop)
+      canvas.addEventListener('mousedown', (e: MouseEvent) => {
+        startLongPress(e.offsetX, e.offsetY);
+      });
+      canvas.addEventListener('mousemove', (e: MouseEvent) => {
+        moveLongPress(e.offsetX, e.offsetY);
+      });
+      canvas.addEventListener('mouseup', cancelLongPress);
+
+      // Touch events (mobile / iPhone PWA)
+      canvas.addEventListener('touchstart', (e: TouchEvent) => {
+        const touch = e.touches[0];
+        const rect = canvas.getBoundingClientRect();
+        startLongPress(touch.clientX - rect.left, touch.clientY - rect.top);
+      }, { passive: true });
+      canvas.addEventListener('touchmove', (e: TouchEvent) => {
+        const touch = e.touches[0];
+        const rect = canvas.getBoundingClientRect();
+        moveLongPress(touch.clientX - rect.left, touch.clientY - rect.top);
+      }, { passive: true });
+      canvas.addEventListener('touchend', cancelLongPress);
+      canvas.addEventListener('touchcancel', cancelLongPress);
+
+      // Prevent iOS Safari context menu on long-press
+      canvas.addEventListener('contextmenu', (e: Event) => {
+        e.preventDefault();
       });
 
       mapRef.current = map;
