@@ -1,5 +1,11 @@
+[phases.setup]
+nixPkgs = ["nodejs_22"]
+
+[phases.install]
+cmds = ["npm ci --ignore-scripts"]
+
 [phases.build]
-cmds = ["npm ci", "npx expo export --platform web"]
+cmds = ["npx expo export --platform web"]
 
 [start]
 cmd = "npx serve dist --single --listen tcp://0.0.0.0:$PORT"
