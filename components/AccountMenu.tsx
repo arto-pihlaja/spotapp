@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { StyleSheet, View, Pressable, Text, Alert } from 'react-native';
+import { StyleSheet, View, Pressable, Text, Alert, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAuthStore } from '@/stores/useAuthStore';
 
@@ -24,10 +24,16 @@ export function AccountMenu() {
 
   const handleLogout = () => {
     setMenuOpen(false);
-    Alert.alert('Log out', 'Are you sure you want to log out?', [
-      { text: 'Cancel', style: 'cancel' },
-      { text: 'Log out', style: 'destructive', onPress: () => clearAuth() },
-    ]);
+    if (Platform.OS === 'web') {
+      if (window.confirm('Are you sure you want to log out?')) {
+        clearAuth();
+      }
+    } else {
+      Alert.alert('Log out', 'Are you sure you want to log out?', [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'Log out', style: 'destructive', onPress: () => clearAuth() },
+      ]);
+    }
   };
 
   const handleProfile = () => {
