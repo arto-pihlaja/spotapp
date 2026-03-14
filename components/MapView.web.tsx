@@ -204,11 +204,13 @@ export default forwardRef<MapViewHandle, MapViewProps>(function MapView({ region
 
       // Touch events (mobile / iPhone PWA)
       canvas.addEventListener('touchstart', (e: TouchEvent) => {
+        if (e.touches.length !== 1) { cancelLongPress(); return; }
         const touch = e.touches[0];
         const rect = canvas.getBoundingClientRect();
         startLongPress(touch.clientX - rect.left, touch.clientY - rect.top);
       }, { passive: true });
       canvas.addEventListener('touchmove', (e: TouchEvent) => {
+        if (e.touches.length > 1) { cancelLongPress(); return; }
         const touch = e.touches[0];
         const rect = canvas.getBoundingClientRect();
         moveLongPress(touch.clientX - rect.left, touch.clientY - rect.top);
