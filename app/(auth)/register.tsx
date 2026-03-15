@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import {
+  View,
   Text,
   TextInput,
   Pressable,
@@ -9,6 +10,7 @@ import {
 } from 'react-native';
 import { useRouter, Link } from 'expo-router';
 import { useRegister } from '@/features/auth/hooks/useRegister';
+import BackToMapButton from '@/components/BackToMapButton';
 
 export default function RegisterScreen() {
   const router = useRouter();
@@ -68,87 +70,97 @@ export default function RegisterScreen() {
   };
 
   return (
-    <ScrollView
-      style={styles.scroll}
-      contentContainerStyle={styles.container}
-      keyboardShouldPersistTaps="handled"
-    >
-      <Text style={styles.title}>Register</Text>
-
-      <TextInput
-        style={styles.input}
-        placeholder="Username"
-        value={username}
-        onChangeText={(text) => { setUsername(text); clearValidation(); }}
-        autoCapitalize="none"
-        autoCorrect={false}
-      />
-      <Text style={styles.hint}>Your handle is publicly visible. Avoid using your real name.</Text>
-
-      <TextInput
-        style={styles.input}
-        placeholder="Password"
-        value={password}
-        onChangeText={(text) => { setPassword(text); clearValidation(); }}
-        secureTextEntry
-      />
-
-      <TextInput
-        style={styles.input}
-        placeholder="Confirm password"
-        value={confirmPassword}
-        onChangeText={(text) => { setConfirmPassword(text); clearValidation(); }}
-        secureTextEntry
-      />
-
-      <TextInput
-        style={styles.input}
-        placeholder="Invitation code"
-        value={invitationCode}
-        onChangeText={(text) => { setInvitationCode(text); clearValidation(); }}
-        autoCapitalize="none"
-        autoCorrect={false}
-      />
-
-      <Text style={styles.gdprNotice}>
-        We store your username, password (hashed), and content you create.
-        Email is optional (for password recovery only). Use any name you
-        like — it doesn't have to be real. Data is hosted in the EU. You can
-        delete your account anytime.{' '}
-        <Link href={'/privacy-policy' as any} style={styles.gdprLink}>
-          Privacy Policy
-        </Link>
-      </Text>
-
-      {validationError ? (
-        <Text style={styles.error}>{validationError}</Text>
-      ) : error ? (
-        <Text style={styles.error}>{error.message}</Text>
-      ) : null}
-
-      <Pressable
-        style={[styles.button, isPending && styles.disabled]}
-        onPress={handleRegister}
-        disabled={isPending}
+    <View style={styles.wrapper}>
+      <BackToMapButton />
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={styles.container}
+        keyboardShouldPersistTaps="handled"
       >
-        {isPending ? (
-          <ActivityIndicator color="#fff" size="small" />
-        ) : (
-          <Text style={styles.buttonText}>Register</Text>
-        )}
-      </Pressable>
+        <Text style={styles.title}>Register</Text>
 
-      <Pressable onPress={() => router.push('/login')} style={styles.link}>
-        <Text style={styles.linkText}>Already have an account? Log in</Text>
-      </Pressable>
-    </ScrollView>
+        <Text style={styles.label}>Username</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="Username"
+          value={username}
+          onChangeText={(text) => { setUsername(text); clearValidation(); }}
+          autoCapitalize="none"
+          autoCorrect={false}
+        />
+        <Text style={styles.hint}>Your handle is publicly visible. Avoid using your real name.</Text>
+
+        <Text style={styles.label}>Password</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="Password"
+          value={password}
+          onChangeText={(text) => { setPassword(text); clearValidation(); }}
+          secureTextEntry
+        />
+
+        <Text style={styles.label}>Confirm Password</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="Confirm password"
+          value={confirmPassword}
+          onChangeText={(text) => { setConfirmPassword(text); clearValidation(); }}
+          secureTextEntry
+        />
+
+        <Text style={styles.label}>Invitation Code</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="Invitation code"
+          value={invitationCode}
+          onChangeText={(text) => { setInvitationCode(text); clearValidation(); }}
+          autoCapitalize="none"
+          autoCorrect={false}
+        />
+
+        <Text style={styles.gdprNotice}>
+          We store your username, password (hashed), and content you create.
+          Email is optional (for password recovery only). Use any name you
+          like — it doesn't have to be real. Data is hosted in the EU. You can
+          delete your account anytime.{' '}
+          <Link href={'/privacy-policy' as any} style={styles.gdprLink}>
+            Privacy Policy
+          </Link>
+        </Text>
+
+        {validationError ? (
+          <Text style={styles.error}>{validationError}</Text>
+        ) : error ? (
+          <Text style={styles.error}>{error.message}</Text>
+        ) : null}
+
+        <Pressable
+          style={[styles.button, isPending && styles.disabled]}
+          onPress={handleRegister}
+          disabled={isPending}
+        >
+          {isPending ? (
+            <ActivityIndicator color="#fff" size="small" />
+          ) : (
+            <Text style={styles.buttonText}>Register</Text>
+          )}
+        </Pressable>
+
+        <Pressable onPress={() => router.push('/login')} style={styles.link}>
+          <Text style={styles.linkText}>Already have an account? Log in</Text>
+        </Pressable>
+      </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  scroll: {
+  wrapper: {
     flex: 1,
     backgroundColor: '#fff',
+  },
+  scroll: {
+    flex: 1,
   },
   container: {
     flexGrow: 1,
@@ -160,6 +172,12 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     marginBottom: 24,
     textAlign: 'center',
+  },
+  label: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#374151',
+    marginBottom: 4,
   },
   hint: {
     fontSize: 12,

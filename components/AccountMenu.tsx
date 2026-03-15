@@ -37,15 +37,13 @@ export function AccountMenu() {
   };
 
   const handleProfile = () => {
+    if (user) router.push(`/profile/${user.id}`);
     setMenuOpen(false);
-    if (user) {
-      router.push(`/profile/${user.id}`);
-    }
   };
 
   const handleSettings = () => {
-    setMenuOpen(false);
     router.push('/settings');
+    setMenuOpen(false);
   };
 
   return (

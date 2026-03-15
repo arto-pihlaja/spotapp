@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useLogin } from '@/features/auth/hooks/useLogin';
+import BackToMapButton from '@/components/BackToMapButton';
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -28,6 +29,7 @@ export default function LoginScreen() {
 
   return (
     <View style={styles.container}>
+      <BackToMapButton />
       <Text style={styles.title}>Log In</Text>
 
       <TextInput
