@@ -19,7 +19,10 @@ export async function initPrisma() {
 
 const DELETED_USER_ID = '00000000-0000-0000-0000-000000000000';
 
-/** Ensure sentinel [deleted] user and a test invitation code exist. */
+export const ADMIN_USERNAME = 'test-admin-active';
+export const ADMIN_PASSWORD = 'AdminPass123!';
+
+/** Ensure sentinel [deleted] user, admin user, and a test invitation code exist. */
 export async function seedTestData() {
   await prisma.user.upsert({
     where: { id: DELETED_USER_ID },
@@ -41,6 +44,19 @@ export async function seedTestData() {
       passwordHash: 'NOLOGIN',
       role: 'ADMIN',
       isBlocked: true,
+    },
+  });
+
+  // Loginable admin user for admin tests
+  const bcrypt = await import('bcryptjs');
+  const adminHash = await bcrypt.default.hash(ADMIN_PASSWORD, 4); // low rounds for speed
+  await prisma.user.upsert({
+    where: { username: ADMIN_USERNAME },
+    update: { passwordHash: adminHash },
+    create: {
+      username: ADMIN_USERNAME,
+      passwordHash: adminHash,
+      role: 'ADMIN',
     },
   });
 

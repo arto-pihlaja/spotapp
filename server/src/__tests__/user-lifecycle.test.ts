@@ -35,17 +35,6 @@ let userId = '';
 
 describe('User Management Lifecycle', () => {
   beforeAll(async () => {
-    const { execSync } = await import('node:child_process');
-    execSync('npx prisma db push --force-reset --schema=prisma/schema.prisma', {
-      cwd: '/opt/spotapp/server',
-      env: {
-        ...process.env,
-        DATABASE_URL: process.env.DATABASE_URL,
-        PRISMA_USER_CONSENT_FOR_DANGEROUS_AI_ACTION: 'yes',
-      },
-      stdio: 'pipe',
-    });
-    // Use the app's prisma client for test queries
     await initPrisma();
     await cleanDb();
     await seedTestData();
