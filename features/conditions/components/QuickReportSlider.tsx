@@ -3,6 +3,7 @@ import {
   StyleSheet,
   View,
   Text,
+  TextInput,
   Pressable,
   PanResponder,
   AccessibilityInfo,
@@ -46,6 +47,7 @@ export function QuickReportSlider({ spotId, onDone, onCompassTouchChange }: Quic
   const [waveHeight, setWaveHeight] = useState(1.0);
   const [windSpeed, setWindSpeed] = useState(0);
   const [windAngle, setWindAngle] = useState(0);
+  const [freeText, setFreeText] = useState('');
   const [showAccessible, setShowAccessible] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const compassCenter = useRef({ x: 0, y: 0 });
@@ -92,10 +94,13 @@ export function QuickReportSlider({ spotId, onDone, onCompassTouchChange }: Quic
 
   const handleSubmit = async () => {
     try {
+      const roundedWaveHeight = Math.round(waveHeight * 2) / 2;
+      const roundedWindSpeed = Math.round(windSpeed / 2) * 2;
       await mutation.mutateAsync({
-        waveHeight,
-        windSpeed: windSpeed > 0 ? windSpeed : undefined,
-        windDirection: windSpeed > 0 ? windAngle : undefined,
+        waveHeight: roundedWaveHeight,
+        windSpeed: roundedWindSpeed > 0 ? roundedWindSpeed : undefined,
+        windDirection: roundedWindSpeed > 0 ? windAngle : undefined,
+        freeText: freeText.trim() || undefined,
       });
       setSubmitted(true);
       setTimeout(onDone, 2000);
@@ -254,6 +259,24 @@ export function QuickReportSlider({ spotId, onDone, onCompassTouchChange }: Quic
             </View>
           </View>
         )}
+      </View>
+
+      {/* Free text note */}
+      <View style={styles.field}>
+        <Text style={styles.label}>Comment</Text>
+        <TextInput
+          style={styles.freeTextInput}
+          value={freeText}
+          onChangeText={setFreeText}
+          placeholder="Add a note (optional)"
+          maxLength={150}
+          returnKeyType="done"
+          onFocus={(e) => {
+            if (Platform.OS === 'web') {
+              (e.target as any).scrollIntoView?.({ behavior: 'smooth', block: 'center' });
+            }
+          }}
+        />
       </View>
 
       {/* Submit */}
@@ -477,6 +500,17 @@ const styles = StyleSheet.create({
   },
   chipTextActive: {
     color: '#fff',
+  },
+  freeTextInput: {
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    fontSize: 14,
+    color: '#333',
+    backgroundColor: '#fafafa',
+    marginBottom: 12,
   },
   submitButton: {
     backgroundColor: '#0284C7',

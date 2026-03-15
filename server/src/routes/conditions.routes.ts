@@ -26,6 +26,7 @@ router.get('/spots/:spotId/conditions', optionalAuth, async (req: Request, res: 
     waveHeight: c.waveHeight,
     windSpeed: c.windSpeed,
     windDirection: c.windDirection != null ? Number(c.windDirection) : null,
+    freeText: c.freeText,
     createdAt: c.createdAt,
     confirmCount: c._count.confirmations,
     ...(req.user ? { reporter: c.user } : {}),
@@ -53,6 +54,7 @@ router.post('/spots/:spotId/conditions', requireAuth, async (req: Request, res: 
     waveHeight: body.data.waveHeight,
     windSpeed: body.data.windSpeed,
     windDirection: body.data.windDirection != null ? String(body.data.windDirection) : undefined,
+    freeText: body.data.freeText,
   });
 
   const responseData = {

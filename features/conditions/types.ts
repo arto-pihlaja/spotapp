@@ -13,6 +13,7 @@ export interface ConditionReport {
   waveHeight: number | null;
   windSpeed: number | null;
   windDirection: number | null;
+  freeText?: string | null;
   createdAt: string;
   confirmCount: number;
   hasConfirmed?: boolean;
@@ -23,4 +24,5 @@ export interface CreateConditionInput {
   waveHeight?: number;
   windSpeed?: number;
   windDirection?: number;
+  freeText?: string;
 }

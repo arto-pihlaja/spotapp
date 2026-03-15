@@ -12,8 +12,8 @@ const NO_DATA_COLOR = '#9CA3AF';
 
 function getRecencyColor(createdAt: string): string {
   const minutesAgo = (Date.now() - new Date(createdAt).getTime()) / 60_000;
-  if (minutesAgo < 30) return '#10B981';
-  if (minutesAgo < 90) return '#FBBF24';
+  if (minutesAgo < 60) return '#10B981';
+  if (minutesAgo < 120) return '#FBBF24';
   if (minutesAgo < 180) return '#F97316';
   return '#9CA3AF';
 }
@@ -24,7 +24,7 @@ function SpotMarkerView({ spot }: { spot: MapMarker }) {
   const bgColor = hasCondition ? getRecencyColor(spot.latestCondition!.createdAt) : NO_DATA_COLOR;
 
   const condParts: string[] = [];
-  if (hasCondition) {
+  if (hasCondition && bgColor !== NO_DATA_COLOR) {
     const cond = spot.latestCondition!;
     if (cond.waveHeight != null) condParts.push(`${cond.waveHeight}m`);
     if (cond.windSpeed != null) {

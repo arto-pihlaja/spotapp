@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { StyleSheet, View, Text, TextInput, Pressable, ActivityIndicator } from 'react-native';
+import { StyleSheet, View, Text, TextInput, Pressable, ActivityIndicator, KeyboardAvoidingView, Platform } from 'react-native';
 import Markdown from 'react-native-markdown-display';
 import { useUpdateWiki } from '../hooks/useUpdateWiki';
 
@@ -9,23 +9,8 @@ interface WikiEditorProps {
   onDone: () => void;
 }
 
-const TEMPLATE = `## Parking
-_Add parking info here_
-
-## Hazards
-_Add hazard info here_
-
-## Conditions
-_Add ideal conditions info here_
-
-## Etiquette
-_Add local etiquette here_
-
-## Notes
-_Add other notes here_`;
-
 export function WikiEditor({ spotId, initialContent, onDone }: WikiEditorProps) {
-  const [content, setContent] = useState(initialContent || TEMPLATE);
+  const [content, setContent] = useState(initialContent);
   const [previewing, setPreviewing] = useState(false);
   const { mutate, isPending } = useUpdateWiki(spotId);
 
@@ -34,7 +19,11 @@ export function WikiEditor({ spotId, initialContent, onDone }: WikiEditorProps) 
   };
 
   return (
-    <View style={styles.container}>
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      keyboardVerticalOffset={120}
+    >
       {/* Toolbar */}
       <View style={styles.toolbar}>
         <Pressable
@@ -81,13 +70,12 @@ export function WikiEditor({ spotId, initialContent, onDone }: WikiEditorProps) 
           )}
         </Pressable>
       </View>
-    </View>
+    </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
   },
   toolbar: {
     flexDirection: 'row',
@@ -113,7 +101,6 @@ const styles = StyleSheet.create({
     color: '#007AFF',
   },
   input: {
-    flex: 1,
     minHeight: 200,
     fontSize: 14,
     lineHeight: 20,
@@ -139,6 +126,7 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
     gap: 12,
     marginTop: 12,
+    flexShrink: 0,
   },
   cancelButton: {
     paddingHorizontal: 20,
@@ -146,6 +134,9 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     borderWidth: 1,
     borderColor: '#ddd',
+    minWidth: 70,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   cancelText: {
     fontSize: 14,
@@ -159,6 +150,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#007AFF',
     minWidth: 70,
     alignItems: 'center',
+    justifyContent: 'center',
   },
   saveText: {
     fontSize: 14,

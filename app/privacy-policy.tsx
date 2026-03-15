@@ -17,7 +17,8 @@ export default function PrivacyPolicyScreen() {
         <Text style={styles.bold}>Account data:</Text> Username (a pseudonym
         — it does not need to be your real name) and password (stored securely
         using bcrypt hashing). Email is optional and only collected if you choose
-        to provide it for password recovery.
+        to provide it for password recovery. Your email is never shown to other
+        users.
       </Text>
       <Text style={styles.body}>
         <Text style={styles.bold}>Activity data:</Text> Spots you create,
@@ -112,7 +113,7 @@ export default function PrivacyPolicyScreen() {
       <Text style={styles.body}>
         For any privacy-related questions or to exercise your GDPR rights,
         contact us at:{'\n'}
-        <Text style={styles.bold}>privacy@spotapp.eu</Text>
+        <Text style={styles.bold}>privacy@spotapp.org</Text>
       </Text>
     </ScrollView>
   );

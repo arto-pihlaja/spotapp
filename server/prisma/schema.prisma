@@ -124,6 +124,7 @@ model ConditionReport {
   waveHeight    Float?   @map("wave_height")
   windSpeed     Float?   @map("wind_speed")
   windDirection String?  @map("wind_direction")
+  freeText      String?  @map("free_text")
   createdAt     DateTime @default(now()) @map("created_at")
 
   spot          Spot                    @relation(fields: [spotId], references: [id])

@@ -42,6 +42,7 @@ export default function RootLayout() {
           <Stack.Screen name="profile/[userId]" options={{ title: 'Profile' }} />
           <Stack.Screen name="settings" options={{ title: 'Settings' }} />
           <Stack.Screen name="privacy-policy" options={{ title: 'Privacy Policy' }} />
+          <Stack.Screen name="help" options={{ title: 'Help' }} />
         </Stack>
         <Toast />
         <StatusBar style="auto" />

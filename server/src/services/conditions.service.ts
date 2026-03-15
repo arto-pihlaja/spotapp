@@ -32,6 +32,7 @@ interface CreateConditionParams {
   waveHeight?: number;
   windSpeed?: number;
   windDirection?: string;
+  freeText?: string;
 }
 
 export async function createConditionReport({
@@ -40,6 +41,7 @@ export async function createConditionReport({
   waveHeight,
   windSpeed,
   windDirection,
+  freeText,
 }: CreateConditionParams) {
   return prisma.conditionReport.create({
     data: {
@@ -48,6 +50,7 @@ export async function createConditionReport({
       waveHeight: waveHeight ?? null,
       windSpeed: windSpeed ?? null,
       windDirection: windDirection ?? null,
+      freeText: freeText ?? null,
     },
     select: {
       id: true,
@@ -55,6 +58,7 @@ export async function createConditionReport({
       waveHeight: true,
       windSpeed: true,
       windDirection: true,
+      freeText: true,
       createdAt: true,
       user: { select: { id: true, username: true } },
     },
@@ -73,6 +77,7 @@ export async function getConditionsBySpot(spotId: string, userId?: string) {
       waveHeight: true,
       windSpeed: true,
       windDirection: true,
+      freeText: true,
       createdAt: true,
       user: { select: { id: true, username: true } },
       _count: { select: { confirmations: true } },

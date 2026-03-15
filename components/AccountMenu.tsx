@@ -15,11 +15,17 @@ export function AccountMenu() {
   }, [user]);
 
   const handlePress = () => {
-    if (user) {
-      setMenuOpen((prev) => !prev);
-    } else {
-      router.push('/login');
-    }
+    setMenuOpen((prev) => !prev);
+  };
+
+  const handleLogin = () => {
+    setMenuOpen(false);
+    router.push('/login');
+  };
+
+  const handleHelp = () => {
+    setMenuOpen(false);
+    router.push('/help');
   };
 
   const handleLogout = () => {
@@ -60,27 +66,43 @@ export function AccountMenu() {
         <Pressable
           style={styles.accountButton}
           onPress={handlePress}
-          accessibilityLabel={user ? 'Account menu' : 'Log in'}
+          accessibilityLabel="Menu"
           accessibilityRole="button"
         >
-          <Text style={styles.accountText} numberOfLines={1}>
-            {user ? user.username : 'Log In'}
-          </Text>
+          <Text style={styles.hamburgerText}>{'\u2630'}</Text>
         </Pressable>
 
         {menuOpen && (
           <View style={styles.dropdown}>
-            <Pressable style={styles.menuItem} onPress={handleProfile}>
-              <Text style={styles.menuText}>Profile</Text>
-            </Pressable>
-            <View style={styles.separator} />
-            <Pressable style={styles.menuItem} onPress={handleSettings}>
-              <Text style={styles.menuText}>Settings</Text>
-            </Pressable>
-            <View style={styles.separator} />
-            <Pressable style={styles.menuItem} onPress={handleLogout}>
-              <Text style={[styles.menuText, styles.logoutText]}>Log out</Text>
-            </Pressable>
+            {user ? (
+              <>
+                <Pressable style={styles.menuItem} onPress={handleProfile}>
+                  <Text style={styles.menuText}>Profile</Text>
+                </Pressable>
+                <View style={styles.separator} />
+                <Pressable style={styles.menuItem} onPress={handleSettings}>
+                  <Text style={styles.menuText}>Settings</Text>
+                </Pressable>
+                <View style={styles.separator} />
+                <Pressable style={styles.menuItem} onPress={handleHelp}>
+                  <Text style={styles.menuText}>Help</Text>
+                </Pressable>
+                <View style={styles.separator} />
+                <Pressable style={styles.menuItem} onPress={handleLogout}>
+                  <Text style={[styles.menuText, styles.logoutText]}>Log out</Text>
+                </Pressable>
+              </>
+            ) : (
+              <>
+                <Pressable style={styles.menuItem} onPress={handleLogin}>
+                  <Text style={styles.menuText}>Log in</Text>
+                </Pressable>
+                <View style={styles.separator} />
+                <Pressable style={styles.menuItem} onPress={handleHelp}>
+                  <Text style={styles.menuText}>Help</Text>
+                </Pressable>
+              </>
+            )}
           </View>
         )}
       </View>
@@ -99,24 +121,24 @@ const styles = StyleSheet.create({
   },
   wrapper: {
     zIndex: 20,
-    marginLeft: 'auto',
+    marginLeft: 0,
   },
   accountButton: {
     backgroundColor: '#fff',
-    paddingHorizontal: 14,
-    paddingVertical: 8,
+    width: 40,
+    height: 40,
     borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
     elevation: 4,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.2,
     shadowRadius: 3,
-    maxWidth: 140,
   },
-  accountText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#0284C7',
+  hamburgerText: {
+    fontSize: 20,
+    color: '#374151',
   },
   dropdown: {
     position: 'absolute',

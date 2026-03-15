@@ -1,4 +1,4 @@
-import { createElement, useState } from 'react';
+import { createElement, useState, useCallback } from 'react';
 import { StyleSheet, View, Text, Pressable, ActivityIndicator, Platform } from 'react-native';
 import { useCreateSession } from '../hooks/useCreateSession';
 import { SPORT_OPTIONS, TIME_PRESETS } from '../types';
@@ -23,6 +23,25 @@ function computeScheduledAt(preset: TimePreset, customDate: Date): string | unde
   if (preset === 'custom') return customDate.toISOString();
   const hours = parseInt(preset.replace('+', '').replace('h', ''), 10);
   return new Date(Date.now() + hours * 60 * 60 * 1000).toISOString();
+}
+
+function getSubmitLabel(preset: TimePreset, customDate: Date): string {
+  if (preset === 'now') return "I'm here now";
+  let targetMs: number;
+  if (preset === 'custom') {
+    targetMs = customDate.getTime();
+  } else {
+    const hours = parseInt(preset.replace('+', '').replace('h', ''), 10);
+    targetMs = Date.now() + hours * 60 * 60 * 1000;
+  }
+  const diffMs = targetMs - Date.now();
+  if (diffMs <= 0) return "I'll be there soon";
+  const totalMins = Math.round(diffMs / 60000);
+  const h = Math.floor(totalMins / 60);
+  const m = totalMins % 60;
+  if (h > 0 && m > 0) return `I'll be there in ${h}h ${m}m`;
+  if (h > 0) return `I'll be there in ${h}h`;
+  return `I'll be there in ${m}m`;
 }
 
 function roundToNextFiveMinutes(date: Date): Date {
@@ -52,9 +71,27 @@ export function SessionForm({ spotId, onDone }: SessionFormProps) {
   const [selectedSport, setSelectedSport] = useState<SportType | null>(null);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showTimePicker, setShowTimePicker] = useState(false);
+  const [pickerExpanded, setPickerExpanded] = useState(false);
   const mutation = useCreateSession(spotId);
 
   const isCustomPast = selectedTime === 'custom' && customDate <= new Date();
+
+  const formatShort = (d: Date) =>
+    d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) +
+    ', ' +
+    d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+
+  const handlePresetSelect = useCallback(
+    (preset: TimePreset) => {
+      if (preset === 'custom' && selectedTime === 'custom') {
+        setPickerExpanded((prev) => !prev);
+        return;
+      }
+      setSelectedTime(preset);
+      setPickerExpanded(preset === 'custom');
+    },
+    [selectedTime],
+  );
 
   const handleSubmit = () => {
     if (!selectedSport) return;
@@ -107,38 +144,61 @@ export function SessionForm({ spotId, onDone }: SessionFormProps) {
           <Pressable
             key={preset.value}
             style={[styles.chip, selectedTime === preset.value && styles.chipActive]}
-            onPress={() => setSelectedTime(preset.value)}
+            onPress={() => handlePresetSelect(preset.value)}
           >
             <Text style={[styles.chipText, selectedTime === preset.value && styles.chipTextActive]}>
-              {preset.label}
+              {preset.value === 'custom' && selectedTime === 'custom'
+                ? `${formatShort(customDate)} ${pickerExpanded ? '\u25B4' : '\u25BE'}`
+                : preset.label}
             </Text>
           </Pressable>
         ))}
       </View>
 
       {/* Custom date/time picker */}
-      {selectedTime === 'custom' && (
+      {selectedTime === 'custom' && pickerExpanded && (
         <View style={styles.customPickerContainer}>
           {Platform.OS === 'web' ? (
             /* Web: native HTML datetime-local input */
             createElement('input', {
               type: 'datetime-local',
               value: toDateTimeLocalValue(customDate),
-              min: toDateTimeLocalValue(new Date()),
               onChange: handleWebDateTimeChange,
               style: {
                 fontSize: 16,
                 padding: 10,
                 borderRadius: 8,
-                border: '1px solid #d0d0d0',
+                border: 'none',
                 width: '100%',
-                backgroundColor: '#fff',
+                backgroundColor: '#0284C7',
                 fontFamily: 'inherit',
-                color: '#333',
+                color: '#fff',
+                colorScheme: 'dark',
               },
             })
+          ) : Platform.OS === 'ios' ? (
+            /* iOS: inline compact pickers */
+            <View style={styles.iosPickerRow}>
+              <DateTimePicker
+                value={customDate}
+                mode="date"
+                display="compact"
+                onChange={handleDateChange}
+                accentColor="#0284C7"
+                themeVariant="dark"
+              />
+              <DateTimePicker
+                value={customDate}
+                mode="time"
+                display="compact"
+                minuteInterval={5}
+                onChange={handleTimeChange}
+                accentColor="#0284C7"
+                themeVariant="dark"
+              />
+            </View>
           ) : (
-            /* Native: button triggers + DateTimePicker */
+            /* Android: button triggers + DateTimePicker */
             <>
               <View style={styles.pickerRow}>
                 <Pressable
@@ -168,8 +228,7 @@ export function SessionForm({ spotId, onDone }: SessionFormProps) {
                 <DateTimePicker
                   value={customDate}
                   mode="date"
-                  display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-                  minimumDate={new Date()}
+                  display="default"
                   onChange={handleDateChange}
                 />
               )}
@@ -178,7 +237,7 @@ export function SessionForm({ spotId, onDone }: SessionFormProps) {
                 <DateTimePicker
                   value={customDate}
                   mode="time"
-                  display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                  display="default"
                   minuteInterval={5}
                   onChange={handleTimeChange}
                 />
@@ -226,7 +285,7 @@ export function SessionForm({ spotId, onDone }: SessionFormProps) {
             <ActivityIndicator size="small" color="#fff" />
           ) : (
             <Text style={styles.submitText}>
-              {selectedTime === 'now' ? "I'm Going Now" : "I'm Planning"}
+              {getSubmitLabel(selectedTime, customDate)}
             </Text>
           )}
         </Pressable>
@@ -279,6 +338,11 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#e0e0e0',
   },
+  iosPickerRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 12,
+  },
   pickerRow: {
     flexDirection: 'row',
     gap: 10,
@@ -286,21 +350,19 @@ const styles = StyleSheet.create({
   pickerButton: {
     flex: 1,
     padding: 10,
-    backgroundColor: '#fff',
+    backgroundColor: '#0284C7',
     borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#d0d0d0',
     alignItems: 'center',
   },
   pickerButtonLabel: {
     fontSize: 11,
-    color: '#888',
+    color: 'rgba(255,255,255,0.7)',
     fontWeight: '500',
     marginBottom: 2,
   },
   pickerButtonValue: {
     fontSize: 14,
-    color: '#333',
+    color: '#fff',
     fontWeight: '600',
   },
   errorText: {

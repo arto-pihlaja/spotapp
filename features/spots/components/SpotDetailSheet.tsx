@@ -60,14 +60,14 @@ export function SpotDetailSheet({ spotId, onDismiss }: SpotDetailSheetProps) {
     setCreatingSession(false);
   }, [spotId]);
 
-  // Expand sheet when reporting, snap back when done
+  // Expand sheet when reporting or editing wiki, snap back when done
   useEffect(() => {
-    if (reporting) {
+    if (reporting || editing) {
       sheetRef.current?.animateTo(2);
     } else {
       sheetRef.current?.animateTo(1);
     }
-  }, [reporting]);
+  }, [reporting, editing]);
 
   // Exit reporting if user drags sheet below 90%
   const handleSnapChange = useCallback((snapIndex: number) => {
@@ -126,78 +126,82 @@ export function SpotDetailSheet({ spotId, onDismiss }: SpotDetailSheetProps) {
           </Text>
 
           {/* Sessions */}
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Sessions</Text>
-            {creatingSession && spotId ? (
-              <SessionForm
-                spotId={spotId}
-                onDone={() => setCreatingSession(false)}
-              />
-            ) : (
-              <>
-                {!isAuthenticated && sessionCount > 0 ? (
-                  <Text style={styles.sessionCount}>
-                    {sessionCount} active {sessionCount === 1 ? 'session' : 'sessions'}
-                  </Text>
-                ) : sessions && sessions.length > 0 ? (
-                  sessions.map((s) => (
-                    <SessionCard
-                      key={s.id}
-                      session={s}
-                      onLeave={s.isOwn ? () => leaveMutation.mutate(s.id) : undefined}
-                      leaveLoading={leaveMutation.isPending}
-                    />
-                  ))
-                ) : (
-                  <Text style={styles.placeholder}>No active sessions</Text>
-                )}
-                {isAuthenticated && !hasOwnSession && (
-                  <Pressable
-                    style={styles.goingButton}
-                    onPress={() => setCreatingSession(true)}
-                  >
-                    <Text style={styles.goingButtonText}>I'm Going</Text>
-                  </Pressable>
-                )}
-              </>
-            )}
-          </View>
+          {!editing && (
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Sessions</Text>
+              {creatingSession && spotId ? (
+                <SessionForm
+                  spotId={spotId}
+                  onDone={() => setCreatingSession(false)}
+                />
+              ) : (
+                <>
+                  {!isAuthenticated && sessionCount > 0 ? (
+                    <Text style={styles.sessionCount}>
+                      {sessionCount} active {sessionCount === 1 ? 'session' : 'sessions'}
+                    </Text>
+                  ) : sessions && sessions.length > 0 ? (
+                    sessions.map((s) => (
+                      <SessionCard
+                        key={s.id}
+                        session={s}
+                        onLeave={s.isOwn ? () => leaveMutation.mutate(s.id) : undefined}
+                        leaveLoading={leaveMutation.isPending}
+                      />
+                    ))
+                  ) : (
+                    <Text style={styles.placeholder}>No active sessions</Text>
+                  )}
+                  {isAuthenticated && !hasOwnSession && (
+                    <Pressable
+                      style={styles.goingButton}
+                      onPress={() => setCreatingSession(true)}
+                    >
+                      <Text style={styles.goingButtonText}>I'm Going</Text>
+                    </Pressable>
+                  )}
+                </>
+              )}
+            </View>
+          )}
 
           {/* Conditions */}
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Conditions</Text>
-            {reporting && spotId ? (
-              <QuickReportSlider
-                spotId={spotId}
-                onDone={() => setReporting(false)}
-                onCompassTouchChange={setCompassTouching}
-              />
-            ) : (
-              <>
-                {conditions && conditions.length > 0 ? (
-                  conditions.slice(0, 3).map((c) => (
-                    <ConditionBadge
-                      key={c.id}
-                      condition={c}
-                      showReporter={isAuthenticated}
-                      onConfirm={isAuthenticated ? () => confirmMutation.mutate(c.id) : undefined}
-                      confirmDisabled={c.hasConfirmed}
-                    />
-                  ))
-                ) : (
-                  <Text style={styles.placeholder}>No condition reports yet</Text>
-                )}
-                {isAuthenticated && (
-                  <Pressable
-                    style={styles.reportButton}
-                    onPress={() => setReporting(true)}
-                  >
-                    <Text style={styles.reportButtonText}>Conditions Changed</Text>
-                  </Pressable>
-                )}
-              </>
-            )}
-          </View>
+          {!editing && (
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Conditions</Text>
+              {reporting && spotId ? (
+                <QuickReportSlider
+                  spotId={spotId}
+                  onDone={() => setReporting(false)}
+                  onCompassTouchChange={setCompassTouching}
+                />
+              ) : (
+                <>
+                  {conditions && conditions.length > 0 ? (
+                    conditions.slice(0, 3).map((c) => (
+                      <ConditionBadge
+                        key={c.id}
+                        condition={c}
+                        showReporter={isAuthenticated}
+                        onConfirm={isAuthenticated ? () => confirmMutation.mutate(c.id) : undefined}
+                        confirmDisabled={c.hasConfirmed}
+                      />
+                    ))
+                  ) : (
+                    <Text style={styles.placeholder}>No condition reports yet</Text>
+                  )}
+                  {isAuthenticated && (
+                    <Pressable
+                      style={styles.reportButton}
+                      onPress={() => setReporting(true)}
+                    >
+                      <Text style={styles.reportButtonText}>Conditions Changed</Text>
+                    </Pressable>
+                  )}
+                </>
+              )}
+            </View>
+          )}
 
           {/* Wiki */}
           <View style={styles.section}>

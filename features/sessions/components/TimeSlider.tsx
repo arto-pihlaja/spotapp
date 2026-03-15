@@ -71,13 +71,20 @@ export function TimeSlider({ onChange }: TimeSliderProps) {
   const [customDate, setCustomDate] = useState<Date>(() => roundToNextFiveMinutes(new Date()));
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showTimePicker, setShowTimePicker] = useState(false);
+  const [pickerExpanded, setPickerExpanded] = useState(false);
 
   const handleSelect = useCallback(
     (preset: TimePreset) => {
+      if (preset === 'custom' && selected === 'custom') {
+        // Toggle picker panel open/closed, keep custom selection
+        setPickerExpanded((prev) => !prev);
+        return;
+      }
       setSelected(preset);
+      setPickerExpanded(preset === 'custom');
       onChange(computeWindow(preset, customDate));
     },
-    [onChange, customDate],
+    [onChange, customDate, selected],
   );
 
   const updateCustomDate = useCallback(
@@ -119,6 +126,11 @@ export function TimeSlider({ onChange }: TimeSliderProps) {
   const formatTime = (d: Date) =>
     d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
 
+  const formatShort = (d: Date) =>
+    d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) +
+    ', ' +
+    d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+
   return (
     <View style={styles.wrapper}>
       <View style={styles.container}>
@@ -132,13 +144,15 @@ export function TimeSlider({ onChange }: TimeSliderProps) {
             accessibilityState={{ selected: selected === preset.value }}
           >
             <Text style={[styles.chipText, selected === preset.value && styles.chipTextActive]}>
-              {preset.label}
+              {preset.value === 'custom' && selected === 'custom'
+                ? `${formatShort(customDate)} ${pickerExpanded ? '\u25B4' : '\u25BE'}`
+                : preset.label}
             </Text>
           </Pressable>
         ))}
       </View>
 
-      {selected === 'custom' && (
+      {selected === 'custom' && pickerExpanded && (
         <View style={styles.customPickerContainer}>
           {Platform.OS === 'web' ? (
             createElement('input', {
@@ -149,13 +163,34 @@ export function TimeSlider({ onChange }: TimeSliderProps) {
                 fontSize: 14,
                 padding: 8,
                 borderRadius: 8,
-                border: '1px solid #d0d0d0',
+                border: 'none',
                 width: '100%',
-                backgroundColor: '#fff',
+                backgroundColor: '#0284C7',
                 fontFamily: 'inherit',
-                color: '#333',
+                color: '#fff',
+                colorScheme: 'dark',
               },
             })
+          ) : Platform.OS === 'ios' ? (
+            <View style={styles.iosPickerRow}>
+              <DateTimePicker
+                value={customDate}
+                mode="date"
+                display="compact"
+                onChange={handleDateChange}
+                accentColor="#0284C7"
+                themeVariant="dark"
+              />
+              <DateTimePicker
+                value={customDate}
+                mode="time"
+                display="compact"
+                minuteInterval={5}
+                onChange={handleTimeChange}
+                accentColor="#0284C7"
+                themeVariant="dark"
+              />
+            </View>
           ) : (
             <>
               <View style={styles.pickerRow}>
@@ -186,7 +221,7 @@ export function TimeSlider({ onChange }: TimeSliderProps) {
                 <DateTimePicker
                   value={customDate}
                   mode="date"
-                  display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                  display="default"
                   onChange={handleDateChange}
                 />
               )}
@@ -195,7 +230,7 @@ export function TimeSlider({ onChange }: TimeSliderProps) {
                 <DateTimePicker
                   value={customDate}
                   mode="time"
-                  display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                  display="default"
                   minuteInterval={5}
                   onChange={handleTimeChange}
                 />
@@ -256,24 +291,27 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 8,
   },
+  iosPickerRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 12,
+  },
   pickerButton: {
     flex: 1,
     padding: 8,
-    backgroundColor: '#fff',
+    backgroundColor: '#0284C7',
     borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#d0d0d0',
     alignItems: 'center',
   },
   pickerButtonLabel: {
     fontSize: 11,
-    color: '#888',
+    color: 'rgba(255,255,255,0.7)',
     fontWeight: '500',
     marginBottom: 2,
   },
   pickerButtonValue: {
     fontSize: 13,
-    color: '#333',
+    color: '#fff',
     fontWeight: '600',
   },
 });

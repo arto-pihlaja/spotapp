@@ -9,9 +9,9 @@ interface RecencyInfo {
 }
 
 const THRESHOLDS = {
-  fresh: 30,    // <30 minutes
-  recent: 90,   // 30-90 minutes
-  stale: 180,   // 90min-3h
+  fresh: 60,    // <1 hour
+  recent: 120,  // 1-2 hours
+  stale: 180,   // 2-3 hours
 } as const;
 
 const COLORS: Record<RecencyTier, string> = {

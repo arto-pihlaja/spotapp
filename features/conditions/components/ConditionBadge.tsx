@@ -13,14 +13,14 @@ interface ConditionBadgeProps {
 }
 
 const DIRECTION_ARROWS: Record<string, string> = {
-  N: '\u2191',   // ↑
-  NE: '\u2197',  // ↗
-  E: '\u2192',   // →
-  SE: '\u2198',  // ↘
-  S: '\u2193',   // ↓
-  SW: '\u2199',  // ↙
-  W: '\u2190',   // ←
-  NW: '\u2196',  // ↖
+  N: '\u2193',   // ↓ (wind from N blows south)
+  NE: '\u2199',  // ↙
+  E: '\u2190',   // ←
+  SE: '\u2196',  // ↖
+  S: '\u2191',   // ↑
+  SW: '\u2197',  // ↗
+  W: '\u2192',   // →
+  NW: '\u2198',  // ↘
 };
 
 function buildAccessibilityLabel(c: ConditionReport, showReporter: boolean): string {
@@ -89,6 +89,11 @@ export function ConditionBadge({
         </View>
       </View>
 
+      {/* Free text note */}
+      {c.freeText ? (
+        <Text style={styles.freeText}>{c.freeText}</Text>
+      ) : null}
+
       {/* Meta row */}
       <View style={styles.metaRow}>
         <Text style={styles.metaText}>
@@ -156,6 +161,12 @@ const styles = StyleSheet.create({
   recencyContainer: {
     marginLeft: 'auto',
     paddingTop: 2,
+  },
+  freeText: {
+    fontSize: 13,
+    fontStyle: 'italic',
+    color: '#64748B',
+    marginTop: 6,
   },
   metaRow: {
     flexDirection: 'row',

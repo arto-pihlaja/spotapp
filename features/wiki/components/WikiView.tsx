@@ -8,21 +8,6 @@ interface WikiViewProps {
   onEdit?: () => void;
 }
 
-const EMPTY_PLACEHOLDER = `## Parking
-_No info yet_
-
-## Hazards
-_No info yet_
-
-## Conditions
-_No info yet_
-
-## Etiquette
-_No info yet_
-
-## Notes
-_No info yet_`;
-
 function formatDate(dateStr: string): string {
   const date = new Date(dateStr);
   return date.toLocaleDateString(undefined, {
@@ -50,12 +35,9 @@ export function WikiView({ spotId, onEdit }: WikiViewProps) {
         <Text style={styles.emptyText}>No wiki content yet</Text>
         {isAuthenticated && onEdit && (
           <Pressable onPress={onEdit} style={styles.editButton}>
-            <Text style={styles.editText}>Edit Wiki</Text>
+            <Text style={styles.editText}>Edit</Text>
           </Pressable>
         )}
-        <View style={styles.placeholder}>
-          <Markdown style={markdownStyles}>{EMPTY_PLACEHOLDER}</Markdown>
-        </View>
       </View>
     );
   }
@@ -64,7 +46,7 @@ export function WikiView({ spotId, onEdit }: WikiViewProps) {
     <View>
       {isAuthenticated && onEdit && (
         <Pressable onPress={onEdit} style={styles.editButton}>
-          <Text style={styles.editText}>Edit Wiki</Text>
+          <Text style={styles.editText}>Edit</Text>
         </Pressable>
       )}
       <Markdown style={markdownStyles}>{wiki.content}</Markdown>
@@ -101,9 +83,6 @@ const styles = StyleSheet.create({
     color: '#999',
     fontStyle: 'italic',
     marginBottom: 12,
-  },
-  placeholder: {
-    opacity: 0.5,
   },
   meta: {
     fontSize: 12,

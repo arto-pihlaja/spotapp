@@ -34,9 +34,9 @@ const WIND_ARROWS: Record<string, string> = {
 
 function getRecencyColor(createdAt: string): string {
   const minutesAgo = (Date.now() - new Date(createdAt).getTime()) / 60_000;
-  if (minutesAgo < 30) return '#10B981';   // green - fresh
-  if (minutesAgo < 90) return '#FBBF24';   // yellow - recent
-  if (minutesAgo < 180) return '#F97316';  // orange - stale
+  if (minutesAgo < 60) return '#10B981';   // green - fresh (<1h)
+  if (minutesAgo < 120) return '#FBBF24';  // yellow - recent (1-2h)
+  if (minutesAgo < 180) return '#F97316';  // orange - stale (2-3h)
   return '#9CA3AF';                         // grey - old
 }
 
@@ -63,8 +63,8 @@ function buildSpotMarkerElement(spot: MapMarker): HTMLDivElement {
   name.style.cssText = 'color:#fff;font-size:11px;font-weight:700;white-space:nowrap;text-shadow:0 1px 2px rgba(0,0,0,0.3);line-height:14px;';
   card.appendChild(name);
 
-  // Condition summary line
-  if (hasCondition) {
+  // Condition summary line (hide on grey/outdated markers)
+  if (hasCondition && bgColor !== NO_DATA_COLOR) {
     const cond = spot.latestCondition!;
     const parts: string[] = [];
     if (cond.waveHeight != null) parts.push(`${cond.waveHeight}m`);
