@@ -1,13 +1,13 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import {
-  View,
   Text,
   TextInput,
   Pressable,
   StyleSheet,
   ActivityIndicator,
+  ScrollView,
 } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, Link } from 'expo-router';
 import { useRegister } from '@/features/auth/hooks/useRegister';
 
 export default function RegisterScreen() {
@@ -68,7 +68,11 @@ export default function RegisterScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <ScrollView
+      style={styles.scroll}
+      contentContainerStyle={styles.container}
+      keyboardShouldPersistTaps="handled"
+    >
       <Text style={styles.title}>Register</Text>
 
       <TextInput
@@ -106,6 +110,16 @@ export default function RegisterScreen() {
         autoCorrect={false}
       />
 
+      <Text style={styles.gdprNotice}>
+        We store your username, password (hashed), and content you create.
+        Email is optional (for password recovery only). Use any name you
+        like — it doesn't have to be real. Data is hosted in the EU. You can
+        delete your account anytime.{' '}
+        <Link href={'/privacy-policy' as any} style={styles.gdprLink}>
+          Privacy Policy
+        </Link>
+      </Text>
+
       {validationError ? (
         <Text style={styles.error}>{validationError}</Text>
       ) : error ? (
@@ -127,16 +141,19 @@ export default function RegisterScreen() {
       <Pressable onPress={() => router.push('/login')} style={styles.link}>
         <Text style={styles.linkText}>Already have an account? Log in</Text>
       </Pressable>
-    </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  scroll: {
     flex: 1,
+    backgroundColor: '#fff',
+  },
+  container: {
+    flexGrow: 1,
     justifyContent: 'center',
     padding: 24,
-    backgroundColor: '#fff',
   },
   title: {
     fontSize: 28,
@@ -185,5 +202,15 @@ const styles = StyleSheet.create({
   linkText: {
     color: '#0284C7',
     fontSize: 14,
+  },
+  gdprNotice: {
+    fontSize: 12,
+    color: '#888',
+    lineHeight: 18,
+    marginBottom: 12,
+  },
+  gdprLink: {
+    color: '#0284C7',
+    fontSize: 12,
   },
 });

@@ -22,16 +22,16 @@ app.use(cors(corsOptions));
 app.use(express.json());
 app.use(pinoHttp({ logger }));
 
-// Routes
+// Routes (profileRoutes before adminRoutes so /users/me matches before /users/:userId)
 app.use('/api/v1', healthRoutes);
 app.use('/api/v1', spotsRoutes);
 app.use('/api/v1', authRoutes);
+app.use('/api/v1', profileRoutes);
 app.use('/api/v1', adminRoutes);
 app.use('/api/v1', wikiRoutes);
 app.use('/api/v1', conditionsRoutes);
 app.use('/api/v1', sessionsRoutes);
 app.use('/api/v1', passwordResetRoutes);
-app.use('/api/v1', profileRoutes);
 
 // Error handler
 app.use(errorHandler);

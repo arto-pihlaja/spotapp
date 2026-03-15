@@ -1,0 +1,18 @@
+import { defineConfig } from 'vitest/config';
+
+export default defineConfig({
+  test: {
+    include: ['src/**/*.test.ts'],
+    setupFiles: ['test-utils/setup.ts'],
+    testTimeout: 15_000,
+    hookTimeout: 30_000,
+    env: {
+      DATABASE_URL: 'postgresql://spotsapp:spotsapp@localhost:5432/spotsapp_test?schema=public',
+      JWT_ACCESS_SECRET: 'test-access-secret-min-16-chars!!',
+      JWT_REFRESH_SECRET: 'test-refresh-secret-min-16-chars!',
+      NODE_ENV: 'test',
+      PORT: '3001',
+      CORS_ORIGIN: 'http://localhost:8081',
+    },
+  },
+});

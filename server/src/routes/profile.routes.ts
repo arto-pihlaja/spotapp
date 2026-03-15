@@ -7,6 +7,7 @@ import { setEmail, verifyEmail } from '../services/email-management.service.js';
 import { prisma } from '../config/prisma.js';
 import { rateLimit } from '../middleware/rateLimiter.js';
 import { AppError } from '../utils/appError.js';
+import { deleteAccount } from '../services/accountDeletion.service.js';
 
 const router = Router();
 
@@ -63,6 +64,27 @@ router.post(
     await verifyEmail(result.data.token);
 
     res.json({ data: { message: 'Email verified successfully.' } });
+  },
+);
+
+// POST /users/me/delete
+const deleteAccountSchema = z.object({
+  password: z.string().min(1, 'Password is required'),
+});
+
+router.post(
+  '/users/me/delete',
+  requireAuth,
+  rateLimit(3, 60_000),
+  async (req: Request, res: Response) => {
+    const result = deleteAccountSchema.safeParse(req.body);
+    if (!result.success) {
+      throw new AppError(400, 'VALIDATION_ERROR', z.prettifyError(result.error));
+    }
+
+    await deleteAccount(req.user!.userId, result.data.password);
+
+    res.json({ data: { message: 'Account deleted successfully.' } });
   },
 );
 

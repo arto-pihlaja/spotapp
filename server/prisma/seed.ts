@@ -4,6 +4,19 @@ import bcrypt from 'bcryptjs';
 const prisma = new PrismaClient();
 
 async function main() {
+  // Sentinel user for anonymizing data from deleted accounts
+  await prisma.user.upsert({
+    where: { id: '00000000-0000-0000-0000-000000000000' },
+    update: {},
+    create: {
+      id: '00000000-0000-0000-0000-000000000000',
+      username: '[deleted]',
+      passwordHash: 'NOLOGIN',
+      role: 'USER',
+      isBlocked: true,
+    },
+  });
+
   const passwordHash = await bcrypt.hash('password123', 10);
 
   const admin = await prisma.user.upsert({
