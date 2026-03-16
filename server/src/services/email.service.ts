@@ -4,6 +4,10 @@ import { logger } from '../utils/logger.js';
 
 const resend = env.RESEND_API_KEY ? new Resend(env.RESEND_API_KEY) : null;
 
+if (!resend && env.NODE_ENV === 'production') {
+  logger.warn('RESEND_API_KEY is not set — emails will NOT be sent. Set this variable to enable email delivery.');
+}
+
 export async function sendEmail(to: string, subject: string, html: string): Promise<void> {
   if (!resend) {
     logger.info({ to, subject, html }, 'EMAIL (dev mode — no RESEND_API_KEY)');
