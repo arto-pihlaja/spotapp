@@ -1,7 +1,7 @@
-import { createElement, useState, useCallback } from 'react';
-import { StyleSheet, View, Text, Pressable, ActivityIndicator, Platform } from 'react-native';
+import { createElement, useState, useCallback, useRef } from 'react';
+import { StyleSheet, View, Text, Pressable, ActivityIndicator, Platform, Modal } from 'react-native';
 import { useCreateSession } from '../hooks/useCreateSession';
-import { SPORT_OPTIONS, TIME_PRESETS } from '../types';
+import { PRIMARY_SPORTS, MORE_SPORTS, TIME_PRESETS } from '../types';
 import type { SportType, TimePreset, CreateSessionInput } from '../types';
 
 // Only import native picker on non-web platforms
@@ -69,9 +69,16 @@ export function SessionForm({ spotId, onDone }: SessionFormProps) {
   const [selectedTime, setSelectedTime] = useState<TimePreset>('now');
   const [customDate, setCustomDate] = useState<Date>(() => roundToNextFiveMinutes(new Date()));
   const [selectedSport, setSelectedSport] = useState<SportType | null>(null);
+  const [showMoreSports, setShowMoreSports] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showTimePicker, setShowTimePicker] = useState(false);
   const [pickerExpanded, setPickerExpanded] = useState(false);
+  const selectRef = useRef<HTMLSelectElement>(null);
+
+  const isMoreSport = selectedSport != null && MORE_SPORTS.some((s) => s.value === selectedSport);
+  const moreSportLabel = isMoreSport
+    ? MORE_SPORTS.find((s) => s.value === selectedSport)?.label
+    : null;
   const mutation = useCreateSession(spotId);
 
   const isCustomPast = selectedTime === 'custom' && customDate <= new Date();
@@ -254,7 +261,7 @@ export function SessionForm({ spotId, onDone }: SessionFormProps) {
       {/* Sport selector */}
       <Text style={styles.label}>Sport</Text>
       <View style={styles.chipRow}>
-        {SPORT_OPTIONS.map((sport) => (
+        {PRIMARY_SPORTS.map((sport) => (
           <Pressable
             key={sport.value}
             style={[styles.chip, selectedSport === sport.value && styles.chipActive]}
@@ -265,7 +272,81 @@ export function SessionForm({ spotId, onDone }: SessionFormProps) {
             </Text>
           </Pressable>
         ))}
+
+        {/* "..." / more sports picker */}
+        {Platform.OS === 'web' ? (
+          <View style={[styles.chip, isMoreSport && styles.chipActive, { position: 'relative' as const }]}>
+            <Pressable onPress={() => selectRef.current?.showPicker?.()}>
+              <Text style={[styles.chipText, isMoreSport && styles.chipTextActive]}>
+                {moreSportLabel ?? '\u2026'}
+              </Text>
+            </Pressable>
+            {createElement('select', {
+              ref: selectRef,
+              value: isMoreSport ? selectedSport : '',
+              onChange: (e: { target: { value: string } }) => {
+                if (e.target.value) setSelectedSport(e.target.value as SportType);
+              },
+              style: {
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: '100%',
+                height: '100%',
+                opacity: 0,
+                cursor: 'pointer',
+              },
+            },
+              createElement('option', { value: '', disabled: true }, 'More sports...'),
+              ...MORE_SPORTS.map((s) =>
+                createElement('option', { key: s.value, value: s.value }, s.label),
+              ),
+            )}
+          </View>
+        ) : (
+          <Pressable
+            style={[styles.chip, isMoreSport && styles.chipActive]}
+            onPress={() => setShowMoreSports(true)}
+          >
+            <Text style={[styles.chipText, isMoreSport && styles.chipTextActive]}>
+              {moreSportLabel ?? '\u2026'}
+            </Text>
+          </Pressable>
+        )}
       </View>
+
+      {/* More sports modal (native platforms) */}
+      {Platform.OS !== 'web' && (
+        <Modal
+          visible={showMoreSports}
+          transparent
+          animationType="fade"
+          onRequestClose={() => setShowMoreSports(false)}
+        >
+          <Pressable style={styles.modalOverlay} onPress={() => setShowMoreSports(false)}>
+            <View style={styles.modalContent}>
+              <Text style={styles.modalTitle}>More sports</Text>
+              {MORE_SPORTS.map((sport) => (
+                <Pressable
+                  key={sport.value}
+                  style={[styles.modalOption, selectedSport === sport.value && styles.modalOptionActive]}
+                  onPress={() => {
+                    setSelectedSport(sport.value);
+                    setShowMoreSports(false);
+                  }}
+                >
+                  <Text style={[styles.modalOptionText, selectedSport === sport.value && styles.modalOptionTextActive]}>
+                    {sport.label}
+                  </Text>
+                </Pressable>
+              ))}
+              <Pressable style={styles.modalCancel} onPress={() => setShowMoreSports(false)}>
+                <Text style={styles.modalCancelText}>Cancel</Text>
+              </Pressable>
+            </View>
+          </Pressable>
+        </Modal>
+      )}
 
       {mutation.error && (
         <Text style={styles.errorText}>Failed to create session. Try again.</Text>
@@ -401,5 +482,52 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 14,
     fontWeight: '600',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.4)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContent: {
+    backgroundColor: '#fff',
+    borderRadius: 14,
+    padding: 20,
+    width: 260,
+  },
+  modalTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#333',
+    marginBottom: 12,
+    textAlign: 'center',
+  },
+  modalOption: {
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    marginBottom: 4,
+  },
+  modalOptionActive: {
+    backgroundColor: '#0284C7',
+  },
+  modalOptionText: {
+    fontSize: 15,
+    color: '#333',
+    textAlign: 'center',
+  },
+  modalOptionTextActive: {
+    color: '#fff',
+    fontWeight: '600',
+  },
+  modalCancel: {
+    marginTop: 8,
+    paddingVertical: 10,
+    alignItems: 'center',
+  },
+  modalCancelText: {
+    fontSize: 14,
+    color: '#888',
+    fontWeight: '500',
   },
 });

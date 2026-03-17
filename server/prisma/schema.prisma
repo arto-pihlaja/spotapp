@@ -16,6 +16,10 @@ enum SportType {
   WING_FOIL
   WINDSURF
   KITE
+  PUMPFOIL
+  SUP
+  SURF
+  EFOIL
   OTHER
 }
 

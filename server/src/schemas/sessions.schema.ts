@@ -11,7 +11,7 @@ export const sessionIdParamsSchema = z.object({
 
 export const createSessionSchema = z.object({
   type: z.enum(['now', 'planned']),
-  sportType: z.enum(['WING_FOIL', 'WINDSURF', 'KITE', 'OTHER']),
+  sportType: z.enum(['WING_FOIL', 'WINDSURF', 'KITE', 'PUMPFOIL', 'SUP', 'SURF', 'EFOIL', 'OTHER']),
   scheduledAt: z.iso.datetime().optional(),
 }).refine(
   (data) => data.type === 'now' || data.scheduledAt != null,

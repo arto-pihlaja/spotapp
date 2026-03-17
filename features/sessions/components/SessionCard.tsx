@@ -14,6 +14,10 @@ const SPORT_LABELS: Record<string, string> = {
   WING_FOIL: 'Wing Foil',
   WINDSURF: 'Windsurf',
   KITE: 'Kite',
+  PUMPFOIL: 'Pumpfoil',
+  SUP: 'SUP',
+  SURF: 'Surf',
+  EFOIL: 'eFoil',
   OTHER: 'Other',
 };
 
