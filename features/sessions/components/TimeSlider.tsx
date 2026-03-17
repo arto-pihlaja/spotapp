@@ -1,7 +1,8 @@
-import { createElement, useState, useCallback } from 'react';
+import { createElement, useState, useCallback, useEffect } from 'react';
 import { StyleSheet, View, Text, Pressable, Platform } from 'react-native';
 import { TIME_PRESETS } from '../types';
 import type { TimePreset } from '../types';
+import { SESSION_DURATION_MS } from '../constants';
 
 // Only import native picker on non-web platforms
 const DateTimePicker =
@@ -45,7 +46,7 @@ function computeWindow(preset: TimePreset, customDate: Date): TimeWindow {
     // "Now" — show sessions from now to +90min (matches NOW session expiry)
     return {
       timeFrom: now.toISOString(),
-      timeTo: new Date(now.getTime() + 90 * 60 * 1000).toISOString(),
+      timeTo: new Date(now.getTime() + SESSION_DURATION_MS).toISOString(),
     };
   }
   if (preset === 'custom') {
@@ -72,6 +73,12 @@ export function TimeSlider({ onChange }: TimeSliderProps) {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showTimePicker, setShowTimePicker] = useState(false);
   const [pickerExpanded, setPickerExpanded] = useState(false);
+
+  // Fire onChange on mount with the default "now" window
+  useEffect(() => {
+    onChange(computeWindow('now', customDate));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleSelect = useCallback(
     (preset: TimePreset) => {

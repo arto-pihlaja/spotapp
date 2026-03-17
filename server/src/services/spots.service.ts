@@ -94,12 +94,12 @@ export async function getSpotsByViewport(viewport: Viewport, timeFilter?: TimeFi
               AND: [
                 // Not expired
                 { expiresAt: { gt: new Date() } },
-                // Within time window (if specified)
-                ...(timeFilter?.timeFrom
-                  ? [{ scheduledAt: { gte: new Date(timeFilter.timeFrom) } }]
-                  : []),
+                // Overlap filter: session [scheduledAt, expiresAt] overlaps [timeFrom, timeTo]
                 ...(timeFilter?.timeTo
-                  ? [{ scheduledAt: { lte: new Date(timeFilter.timeTo) } }]
+                  ? [{ scheduledAt: { lt: new Date(timeFilter.timeTo) } }]
+                  : []),
+                ...(timeFilter?.timeFrom
+                  ? [{ expiresAt: { gt: new Date(timeFilter.timeFrom) } }]
                   : []),
               ],
             },

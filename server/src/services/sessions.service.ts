@@ -1,5 +1,6 @@
 import { prisma } from '../config/prisma.js';
 import type { SessionType, SportType } from '@prisma/client';
+import { SESSION_DURATION_MS } from '../config/sessions.js';
 
 interface CreateSessionParams {
   spotId: string;
@@ -19,7 +20,7 @@ export async function createSession({
   const now = new Date();
   const sessionType: SessionType = type === 'now' ? 'NOW' : 'PLANNED';
   const scheduled = type === 'now' ? now : new Date(scheduledAt!);
-  const expires = new Date((type === 'now' ? now : scheduled).getTime() + 90 * 60 * 1000);
+  const expires = new Date((type === 'now' ? now : scheduled).getTime() + SESSION_DURATION_MS);
 
   return prisma.session.create({
     data: {
