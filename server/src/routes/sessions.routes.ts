@@ -51,7 +51,7 @@ router.post('/spots/:spotId/sessions', requireAuth, async (req: Request, res: Re
     throw new AppError(400, 'VALIDATION_ERROR', z.prettifyError(body.error));
   }
 
-  const session = await createSession({
+  const { session, created } = await createSession({
     spotId: params.data.spotId,
     userId: req.user!.userId,
     type: body.data.type,
@@ -63,6 +63,14 @@ router.post('/spots/:spotId/sessions', requireAuth, async (req: Request, res: Re
     ...session,
     isOwn: true,
   };
+
+  if (!created) {
+    res.status(409).json({
+      error: { code: 'DUPLICATE_SESSION', message: 'You already have a session here around this time' },
+      data: responseData,
+    });
+    return;
+  }
 
   res.status(201).json({ data: responseData });
 

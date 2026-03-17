@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { createSession } from '../api/sessions';
 import type { CreateSessionInput, SessionsResult } from '../types';
 import { useAuthStore } from '@/stores/useAuthStore';
+import { ApiError } from '@/lib/apiClient';
 import { isNetworkError } from '@/lib/networkError';
 import { enqueueMutation } from '@/lib/offlineQueue';
 import { showToast } from '@/components/Toast';
@@ -18,7 +19,7 @@ export function useCreateSession(spotId: string) {
       const previous = queryClient.getQueryData<SessionsResult>(queryKey);
       const user = useAuthStore.getState().user;
 
-      if (previous && user) {
+      if (user) {
         const optimistic = {
           id: `optimistic-${Date.now()}`,
           spotId,
@@ -31,17 +32,25 @@ export function useCreateSession(spotId: string) {
           isOwn: true,
         } as const;
 
+        const current = previous ?? { sessions: [], sessionCount: 0 };
         queryClient.setQueryData<SessionsResult>(queryKey, {
-          sessions: [...previous.sessions, optimistic],
-          sessionCount: previous.sessionCount + 1,
+          sessions: [...current.sessions, optimistic],
+          sessionCount: current.sessionCount + 1,
         });
       }
 
       return { previous };
     },
+    onSuccess: () => {
+      showToast('Session created!', 'success');
+    },
     onError: (error, input, context) => {
       if (context?.previous) {
         queryClient.setQueryData(['spot', spotId, 'sessions'], context.previous);
+      }
+      if (error instanceof ApiError && error.code === 'DUPLICATE_SESSION') {
+        showToast('You already have a session here', 'info');
+        return;
       }
       if (isNetworkError(error)) {
         enqueueMutation({

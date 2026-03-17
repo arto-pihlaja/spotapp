@@ -1,6 +1,7 @@
 import { createElement, useState, useCallback, useRef } from 'react';
 import { StyleSheet, View, Text, Pressable, ActivityIndicator, Platform, Modal } from 'react-native';
 import { useCreateSession } from '../hooks/useCreateSession';
+import { ApiError } from '@/lib/apiClient';
 import { PRIMARY_SPORTS, MORE_SPORTS, TIME_PRESETS } from '../types';
 import type { SportType, TimePreset, CreateSessionInput } from '../types';
 
@@ -110,7 +111,14 @@ export function SessionForm({ spotId, onDone }: SessionFormProps) {
       scheduledAt: computeScheduledAt(selectedTime, customDate),
     };
 
-    mutation.mutate(input, { onSuccess: onDone });
+    mutation.mutate(input, {
+      onSuccess: onDone,
+      onError: (error) => {
+        if (error instanceof ApiError && error.code === 'DUPLICATE_SESSION') {
+          onDone();
+        }
+      },
+    });
   };
 
   const handleDateChange = (_event: unknown, date?: Date) => {

@@ -1,6 +1,6 @@
 import { prisma } from '../config/prisma.js';
 import type { SessionType, SportType } from '@prisma/client';
-import { SESSION_DURATION_MS } from '../config/sessions.js';
+import { SESSION_DURATION_MS, DUPLICATE_WINDOW_MS } from '../config/sessions.js';
 
 interface CreateSessionParams {
   spotId: string;
@@ -10,19 +10,48 @@ interface CreateSessionParams {
   scheduledAt?: string;
 }
 
+const sessionSelect = {
+  id: true,
+  spotId: true,
+  type: true,
+  sportType: true,
+  scheduledAt: true,
+  expiresAt: true,
+  createdAt: true,
+  user: { select: { id: true, username: true } },
+} as const;
+
 export async function createSession({
   spotId,
   userId,
   type,
   sportType,
   scheduledAt,
-}: CreateSessionParams) {
+}: CreateSessionParams): Promise<{ session: SessionResult; created: boolean }> {
   const now = new Date();
   const sessionType: SessionType = type === 'now' ? 'NOW' : 'PLANNED';
   const scheduled = type === 'now' ? now : new Date(scheduledAt!);
   const expires = new Date((type === 'now' ? now : scheduled).getTime() + SESSION_DURATION_MS);
 
-  return prisma.session.create({
+  // Check for duplicate: same user, same spot, active, scheduledAt within window
+  const windowStart = new Date(scheduled.getTime() - DUPLICATE_WINDOW_MS);
+  const windowEnd = new Date(scheduled.getTime() + DUPLICATE_WINDOW_MS);
+
+  const existing = await prisma.session.findFirst({
+    where: {
+      spotId,
+      userId,
+      expiresAt: { gt: now },
+      scheduledAt: { gte: windowStart, lte: windowEnd },
+    },
+    select: sessionSelect,
+  });
+
+  if (existing) {
+    return { session: existing, created: false };
+  }
+
+  const session = await prisma.session.create({
     data: {
       spotId,
       userId,
@@ -31,18 +60,13 @@ export async function createSession({
       scheduledAt: scheduled,
       expiresAt: expires,
     },
-    select: {
-      id: true,
-      spotId: true,
-      type: true,
-      sportType: true,
-      scheduledAt: true,
-      expiresAt: true,
-      createdAt: true,
-      user: { select: { id: true, username: true } },
-    },
+    select: sessionSelect,
   });
+
+  return { session, created: true };
 }
+
+type SessionResult = Awaited<ReturnType<typeof prisma.session.findFirst<{ select: typeof sessionSelect }>>> extends infer T | null ? NonNullable<T> : never;
 
 export async function getSessionsBySpot(spotId: string) {
   const now = new Date();
