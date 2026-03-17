@@ -7,6 +7,6 @@ export function useSessions(spotId: string | null) {
     queryKey: ['spot', spotId, 'sessions'],
     queryFn: () => fetchSessions(spotId!),
     enabled: !!spotId,
-    staleTime: 30_000,
+    staleTime: 0,
   });
 }

@@ -41,7 +41,7 @@ export function SpotDetailSheet({ spotId, onDismiss }: SpotDetailSheetProps) {
   const { data: wiki } = useWiki(spotId);
   const { data: conditions } = useConditions(spotId);
   const confirmMutation = useConfirmCondition(spotId ?? '');
-  const { data: sessionsData } = useSessions(spotId);
+  const { data: sessionsData, isLoading: sessionsLoading } = useSessions(spotId);
   const sessions = sessionsData?.sessions;
   const sessionCount = sessionsData?.sessionCount ?? 0;
   const hasOwnSession = sessions?.some((s) => s.isOwn);
@@ -136,7 +136,9 @@ export function SpotDetailSheet({ spotId, onDismiss }: SpotDetailSheetProps) {
                 />
               ) : (
                 <>
-                  {!isAuthenticated && sessionCount > 0 ? (
+                  {sessionsLoading ? (
+                    <ActivityIndicator size="small" color="#10B981" />
+                  ) : !isAuthenticated && sessionCount > 0 ? (
                     <Text style={styles.sessionCount}>
                       {sessionCount} active {sessionCount === 1 ? 'session' : 'sessions'}
                     </Text>
