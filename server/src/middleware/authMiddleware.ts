@@ -14,8 +14,9 @@ declare global {
 
 /**
  * Extracts and verifies JWT from Authorization header.
- * Attaches user to req.user if valid, sets null if missing/invalid.
- * Does NOT reject anonymous requests — use `requireAuth` for that.
+ * - No token → anonymous access (req.user = null), request continues.
+ * - Valid token → req.user is set, request continues.
+ * - Invalid/expired token → 401 so the client can refresh and retry.
  */
 export function optionalAuth(req: Request, _res: Response, next: NextFunction) {
   const header = req.headers.authorization;
@@ -29,7 +30,7 @@ export function optionalAuth(req: Request, _res: Response, next: NextFunction) {
     const token = header.slice(7);
     req.user = verifyAccessToken(token);
   } catch {
-    req.user = null;
+    throw new AppError(401, 'UNAUTHORIZED', 'Invalid or expired token');
   }
 
   next();

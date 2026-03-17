@@ -125,6 +125,26 @@ describe('Auth Middleware', () => {
     expect(res.body.data).toHaveProperty('id', spotId);
   });
 
+  test('optionalAuth route with expired token → 401 UNAUTHORIZED', async () => {
+    const jwt = await import('jsonwebtoken');
+    const { env } = await import('../config/env.js');
+
+    const expiredToken = jwt.default.sign(
+      { userId: '00000000-0000-0000-0000-000000000001', role: 'USER' },
+      env.JWT_ACCESS_SECRET,
+      { expiresIn: '0s' },
+    );
+
+    await new Promise((resolve) => setTimeout(resolve, 50));
+
+    const res = await request(app)
+      .get(`/api/v1/spots/${spotId}`)
+      .set('Authorization', `Bearer ${expiredToken}`);
+
+    expect(res.status).toBe(401);
+    expect(res.body.error.code).toBe('UNAUTHORIZED');
+  });
+
   test('optionalAuth route → works with valid auth header', async () => {
     const res = await request(app)
       .get(`/api/v1/spots/${spotId}`)
